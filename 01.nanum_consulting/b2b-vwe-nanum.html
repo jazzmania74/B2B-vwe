@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B2B VWE 계산기 | 나눔경영컨설팅</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --navien-blue: #0066CC;
+    --navien-light: #00A5E5;
+    --navien-dark: #003D7A;
+    --bg-main: #F5F8FC;
+    --bg-white: #FFFFFF;
+    --text-primary: #1A1A2E;
+    --text-secondary: #5A6070;
+    --text-light: #8A90A0;
+    --border: #E2E8F0;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+  }
+
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .vwe-calc {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+
+  /* ── 헤더 ── */
+  .vwe-header {
+    background: linear-gradient(135deg, var(--navien-blue) 0%, var(--navien-dark) 100%);
+    border-radius: var(--radius-lg);
+    padding: 36px 40px;
+    margin-bottom: 28px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .vwe-header::after {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+  .header-text {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+  }
+  .vwe-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  .vwe-header h1 {
+    font-size: clamp(20px, 5vw, 30px);
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .vwe-header .vwe-full {
+    font-size: clamp(12px, 2.8vw, 15px);
+    color: rgba(255,255,255,0.7);
+    margin-top: 4px;
+  }
+  .vwe-header .vwe-subtitle {
+    font-size: clamp(12px, 2.8vw, 14px);
+    color: rgba(255,255,255,0.6);
+    margin-top: 8px;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+  .vwe-header .vwe-subtitle b {
+    color: #FFD700;
+  }
+  .header-illustration {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    width: 180px;
+    height: 160px;
+    opacity: 0.92;
+  }
+
+  /* ── 공식 안내 ── */
+  .vwe-formula-box {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--navien-blue);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .vwe-formula-box .formula-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navien-dark);
+    margin-bottom: 12px;
+  }
+  .vwe-formula-box .formula-eq {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    word-break: keep-all;
+  }
+  .vwe-formula-box .formula-eq .tag-comp {
+    display: inline-block;
+    background: #CC3333;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+  .vwe-formula-box .formula-eq .tag-ours {
+    display: inline-block;
+    background: #003366;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+  .vwe-formula-box .formula-eq .tag-price {
+    display: inline-block;
+    background: #E8A817;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+  .vwe-formula-box .formula-eq .tag-labor {
+    display: inline-block;
+    background: #2E8B57;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+
+  /* ── 섹션 제목 ── */
+  .vwe-section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+  }
+  .vwe-section-title .section-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .vwe-section-title h2 {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .vwe-section-title .section-sub {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .dot-comp { background: #FEE2E2; color: #CC3333; }
+  .title-comp h2 { color: #CC3333; }
+  .dot-ours { background: #E8F4FD; color: var(--navien-blue); }
+  .title-ours h2 { color: var(--navien-dark); }
+
+  /* ── 입력 그룹 ── */
+  .vwe-input-group {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+  }
+  .vwe-input-group.group-comp {
+    border-left: 4px solid #CC3333;
+  }
+  .vwe-input-group.group-ours {
+    border-left: 4px solid var(--navien-blue);
+  }
+
+  .vwe-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .vwe-fields .vwe-field-full {
+    grid-column: 1 / -1;
+  }
+
+  .vwe-field {
+    background: #FAFBFC;
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    position: relative;
+    transition: box-shadow 0.2s;
+  }
+  .vwe-field:focus-within {
+    box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+  }
+  .group-comp .vwe-field:focus-within {
+    box-shadow: 0 0 0 3px rgba(204,51,51,0.1);
+  }
+  .vwe-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navien-dark);
+    margin-bottom: 6px;
+  }
+  .group-comp .vwe-field label {
+    color: #CC3333;
+  }
+  .vwe-field input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    color: var(--navien-dark);
+    background: var(--bg-white);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+  .group-comp .vwe-field input {
+    color: #CC3333;
+  }
+  .vwe-field input:focus {
+    border-color: var(--navien-blue);
+    background: #fff;
+  }
+  .group-comp .vwe-field input:focus {
+    border-color: #CC3333;
+  }
+  .vwe-field input::placeholder {
+    color: var(--text-light);
+    font-weight: 400;
+  }
+  .vwe-field .unit {
+    position: absolute;
+    right: 28px;
+    bottom: 22px;
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 600;
+    pointer-events: none;
+  }
+
+  /* 장비가격 강조 필드 */
+  .vwe-field.price-field {
+    background: #FFFBF0;
+    border: 2px solid #F0E0B0;
+  }
+  .vwe-field.price-field label {
+    color: #B8860B;
+  }
+  .vwe-field.price-field input {
+    color: #B8860B;
+    border-color: #E8D5A0;
+  }
+  .vwe-field.price-field input:focus {
+    border-color: #B8860B;
+  }
+  .vwe-field.price-field:focus-within {
+    box-shadow: 0 0 0 2px #B8860B;
+  }
+  .group-comp .vwe-field.price-field label {
+    color: #B8860B;
+  }
+  .group-comp .vwe-field.price-field input {
+    color: #B8860B;
+  }
+  .group-comp .vwe-field.price-field:focus-within {
+    box-shadow: 0 0 0 2px #B8860B;
+  }
+
+  /* 인건비 강조 필드 */
+  .vwe-field.labor-field {
+    background: #F0FFF5;
+    border: 2px solid #B0E0C0;
+  }
+  .vwe-field.labor-field label {
+    color: #2E8B57;
+  }
+  .vwe-field.labor-field input {
+    color: #2E8B57;
+    border-color: #A0D8B0;
+  }
+  .vwe-field.labor-field input:focus {
+    border-color: #2E8B57;
+  }
+  .vwe-field.labor-field:focus-within {
+    box-shadow: 0 0 0 2px #2E8B57;
+  }
+  .group-comp .vwe-field.labor-field label {
+    color: #2E8B57;
+  }
+  .group-comp .vwe-field.labor-field input {
+    color: #2E8B57;
+  }
+  .group-comp .vwe-field.labor-field:focus-within {
+    box-shadow: 0 0 0 2px #2E8B57;
+  }
+
+  /* 시뮬레이션 기간 필드 */
+  .vwe-sim-group {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    border-left: 4px solid #6B4C9A;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+  }
+  .vwe-sim-group .vwe-section-title h2 {
+    color: #6B4C9A;
+  }
+  .vwe-sim-group .section-dot {
+    background: #6B4C9A;
+  }
+  .vwe-sim-group .vwe-field {
+    background: #F8F5FF;
+    border: 2px solid #E0D5F0;
+  }
+  .vwe-sim-group .vwe-field label {
+    color: #6B4C9A;
+  }
+  .vwe-sim-group .vwe-field input {
+    color: #6B4C9A;
+    border-color: #D0C5E0;
+  }
+  .vwe-sim-group .vwe-field input:focus {
+    border-color: #6B4C9A;
+  }
+  .vwe-sim-group .vwe-field:focus-within {
+    box-shadow: 0 0 0 2px #6B4C9A;
+  }
+
+  /* ── 동일 적용 체크 ── */
+  .vwe-same-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 14px 20px;
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .vwe-same-check:hover {
+    background: #F0F7FF;
+    border-color: var(--navien-blue);
+  }
+  .vwe-same-check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--navien-blue);
+    cursor: pointer;
+  }
+  .vwe-same-check span {
+    font-size: 14px;
+    color: var(--navien-dark);
+    font-weight: 600;
+  }
+
+  /* ── 계산 버튼 ── */
+  .vwe-btn {
+    width: 100%;
+    padding: 16px 28px;
+    background: linear-gradient(135deg, var(--navien-blue), var(--navien-dark));
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 14px rgba(0,102,204,0.3);
+    letter-spacing: 0.5px;
+  }
+  .vwe-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,102,204,0.4); }
+  .vwe-btn:active { transform: translateY(0); }
+
+  /* ── 결과 ── */
+  .vwe-result {
+    display: none;
+    margin-top: 32px;
+    animation: vweFadeIn 0.5s ease;
+  }
+  @keyframes vweFadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 핵심 카드 */
+  .vwe-result-card {
+    background: linear-gradient(135deg, var(--navien-blue) 0%, var(--navien-dark) 100%);
+    border-radius: var(--radius-lg);
+    padding: 28px 24px;
+    text-align: center;
+    color: #fff;
+    margin-bottom: 24px;
+  }
+  .vwe-result-label {
+    font-size: clamp(13px, 3vw, 16px);
+    opacity: 0.85;
+    margin-bottom: 6px;
+  }
+  .vwe-result-value {
+    font-size: clamp(30px, 8vw, 52px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    line-height: 1.2;
+    word-break: keep-all;
+  }
+  .vwe-result-sub {
+    font-size: clamp(11px, 2.5vw, 14px);
+    opacity: 0.6;
+    margin-top: 8px;
+    word-break: keep-all;
+  }
+
+  /* N년 총 절감 카드 */
+  .vwe-result-card.card-purple {
+    background: linear-gradient(135deg, #6B4C9A 0%, #8B6FBF 100%);
+  }
+
+  /* 인건비 절감 카드 */
+  .vwe-result-card.card-green {
+    background: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
+  }
+
+  /* 비교 카드 */
+  .vwe-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .vwe-compare-item {
+    border-radius: var(--radius-md);
+    padding: 20px 16px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+  }
+  .vwe-compare-item.comp-card {
+    background: #FFF5F5;
+    border: 1px solid #FFDDDD;
+  }
+  .vwe-compare-item.ours-card {
+    background: #F0F7FF;
+    border: 1px solid #CCE0FF;
+  }
+  .vwe-compare-item .cmp-label {
+    font-size: clamp(11px, 2.5vw, 13px);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .comp-card .cmp-label { color: #CC3333; }
+  .ours-card .cmp-label { color: var(--navien-dark); }
+  .vwe-compare-item .cmp-value {
+    font-size: clamp(18px, 4.5vw, 26px);
+    font-weight: 900;
+    word-break: keep-all;
+  }
+  .comp-card .cmp-value { color: #CC3333; }
+  .ours-card .cmp-value { color: var(--navien-dark); }
+
+  /* 장비 가격 비교 카드 */
+  .vwe-price-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .vwe-price-item {
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: center;
+    background: #FFFBF0;
+    border: 2px solid #F0E0B0;
+  }
+  .vwe-price-item .price-label {
+    font-size: clamp(11px, 2.5vw, 12px);
+    font-weight: 700;
+    color: #B8860B;
+    margin-bottom: 4px;
+  }
+  .vwe-price-item .price-value {
+    font-size: clamp(16px, 4vw, 22px);
+    font-weight: 900;
+    color: #B8860B;
+    word-break: keep-all;
+  }
+  .vwe-price-diff {
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 24px;
+    font-size: clamp(13px, 3vw, 15px);
+    font-weight: 700;
+    border-radius: 8px;
+  }
+  .vwe-price-diff.price-higher {
+    background: #FFF0F0;
+    color: #CC3333;
+  }
+  .vwe-price-diff.price-lower {
+    background: #F0FFF0;
+    color: #228B22;
+  }
+
+  /* 인건비 비교 카드 */
+  .vwe-labor-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .vwe-labor-item {
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: center;
+    background: #F0FFF5;
+    border: 2px solid #B0E0C0;
+  }
+  .vwe-labor-item .labor-label {
+    font-size: clamp(11px, 2.5vw, 12px);
+    font-weight: 700;
+    color: #2E8B57;
+    margin-bottom: 4px;
+  }
+  .vwe-labor-item .labor-value {
+    font-size: clamp(16px, 4vw, 22px);
+    font-weight: 900;
+    color: #2E8B57;
+    word-break: keep-all;
+  }
+  .vwe-labor-diff {
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 24px;
+    font-size: clamp(13px, 3vw, 15px);
+    font-weight: 700;
+    border-radius: 8px;
+  }
+  .vwe-labor-diff.labor-save {
+    background: #F0FFF0;
+    color: #228B22;
+  }
+  .vwe-labor-diff.labor-more {
+    background: #FFF0F0;
+    color: #CC3333;
+  }
+  .vwe-labor-diff.labor-same {
+    background: #F5F5F5;
+    color: #888;
+  }
+
+  /* 상세 */
+  .vwe-detail {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .vwe-detail-item {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    text-align: center;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+  .vwe-detail-item .dt-label {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 4px;
+  }
+  .vwe-detail-item .dt-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--navien-dark);
+  }
+  .vwe-detail-item.dt-highlight {
+    background: #F0FFF0;
+    border: 2px solid #B0E0B0;
+  }
+  .vwe-detail-item.dt-highlight .dt-value {
+    color: #228B22;
+  }
+  .vwe-detail-item.dt-warn {
+    background: #FFF8F0;
+    border: 2px solid #F0D8A0;
+  }
+  .vwe-detail-item.dt-warn .dt-value {
+    color: #B8860B;
+  }
+
+  /* 막대 그래프 */
+  .vwe-chart {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    padding: 28px 24px;
+    margin-bottom: 20px;
+  }
+  .vwe-chart-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--navien-dark);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .vwe-bar-group {
+    margin-bottom: 16px;
+  }
+  .vwe-bar-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: clamp(12px, 2.8vw, 14px);
+    font-weight: 600;
+  }
+  .vwe-bar-label span:first-child { color: #555; }
+  .vwe-bar-label span:last-child { font-weight: 800; color: #003366; }
+  .vwe-bar-track {
+    width: 100%;
+    height: 36px;
+    background: #E0E0E0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .vwe-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    width: 0;
+    transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    min-width: 40px;
+  }
+  .bar-comp {
+    background: linear-gradient(90deg, #CC3333 0%, #E05555 100%);
+  }
+  .bar-ours {
+    background: linear-gradient(90deg, var(--navien-dark) 0%, var(--navien-blue) 100%);
+  }
+  .vwe-savings-bar {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 2px dashed #CCC;
+  }
+  .vwe-savings-label {
+    text-align: center;
+    font-size: clamp(14px, 3.2vw, 17px);
+    font-weight: 800;
+    color: #CC3333;
+  }
+
+  .vwe-chart-sub {
+    font-size: clamp(11px, 2.5vw, 12px);
+    color: #999;
+    text-align: center;
+    margin-top: 4px;
+    margin-bottom: 16px;
+  }
+
+  /* ── 연도별 시뮬레이션 표 ── */
+  .vwe-sim-table-wrap {
+    margin-bottom: 24px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .vwe-sim-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: clamp(11px, 2.6vw, 13px);
+    min-width: 600px;
+  }
+  .vwe-sim-table thead {
+    background: var(--navien-dark);
+    color: #fff;
+  }
+  .vwe-sim-table th {
+    padding: 10px 8px;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .vwe-sim-table tbody tr {
+    border-bottom: 1px solid #E8E8E8;
+    transition: background 0.15s;
+  }
+  .vwe-sim-table tbody tr:hover {
+    background: #F0F7FF;
+  }
+  .vwe-sim-table tbody tr.row-bep {
+    background: #FFFFF0;
+    border: 2px solid #E8A817;
+  }
+  .vwe-sim-table td {
+    padding: 10px 8px;
+    text-align: right;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+  }
+  .vwe-sim-table td:first-child {
+    text-align: center;
+    font-weight: 800;
+    color: var(--navien-dark);
+  }
+  .vwe-sim-table .td-negative {
+    color: #CC3333;
+  }
+  .vwe-sim-table .td-positive {
+    color: #228B22;
+  }
+  .vwe-sim-table .td-bep-tag {
+    display: inline-block;
+    background: #E8A817;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  /* 요약 */
+  .vwe-summary {
+    background: var(--bg-white);
+    border-left: 4px solid var(--navien-blue);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--navien-blue);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+  .vwe-summary p {
+    font-size: 15px;
+    color: var(--navien-dark);
+    font-weight: 600;
+    line-height: 1.7;
+    word-break: keep-all;
+  }
+  .vwe-summary strong {
+    font-size: clamp(16px, 3.8vw, 22px);
+    color: #CC3333;
+    font-weight: 900;
+  }
+  .vwe-summary .summary-green {
+    color: #228B22;
+  }
+  .vwe-summary .summary-purple {
+    color: #6B4C9A;
+  }
+
+  /* 리셋 */
+  .vwe-reset {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: var(--bg-white);
+    color: var(--text-light);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: all 0.2s;
+  }
+  .vwe-reset:hover { border-color: var(--navien-blue); color: var(--navien-blue); }
+
+  /* 푸터 */
+  .vwe-footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-light);
+    font-size: 12px;
+  }
+  .vwe-footer p {
+    font-size: 12px;
+    color: var(--text-light);
+  }
+
+  /* 반응형 */
+  @media (max-width: 900px) {
+    .vwe-detail { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 768px) {
+    .vwe-header { flex-direction: column; text-align: center; }
+    .header-illustration { width: 140px; height: 120px; order: -1; }
+  }
+  @media (max-width: 600px) {
+    .vwe-calc { padding: 12px 12px 40px; }
+    .vwe-header { padding: 24px 20px; }
+    .vwe-header h1 { font-size: 20px; }
+    .vwe-input-group { padding: 20px 16px; }
+    .vwe-sim-group { padding: 20px 16px; }
+    .header-illustration { width: 120px; height: 100px; }
+    .vwe-fields { grid-template-columns: 1fr; }
+    .vwe-compare { grid-template-columns: 1fr; }
+    .vwe-price-compare { grid-template-columns: 1fr; }
+    .vwe-labor-compare { grid-template-columns: 1fr; }
+    .vwe-detail { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="vwe-calc">
+
+  <!-- ── 헤더 ── -->
+  <div class="vwe-header">
+    <div class="header-text">
+      <span class="vwe-badge">나눔경영컨설팅</span>
+      <h1>B2B VWE 계산기</h1>
+      <div class="vwe-full">Value Word Equation — 가치 공식</div>
+      <div class="vwe-subtitle">간단한 단어나 수학공식으로 경쟁사의 제안과 비교하여<br>당사 제안의 성능이나 기능을 <b>'돈'</b>으로 환산하여 보여주는 것</div>
+    </div>
+    <div class="header-illustration">
+      <svg viewBox="0 0 200 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Scale / Balance base -->
+        <rect x="90" y="130" width="20" height="30" rx="3" fill="rgba(255,255,255,0.2)"/>
+        <rect x="60" y="155" width="80" height="8" rx="4" fill="rgba(255,255,255,0.15)"/>
+        <!-- Balance beam (tilted - ours is better) -->
+        <line x1="30" y1="82" x2="170" y2="60" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+        <!-- Pivot point -->
+        <polygon points="100,70 94,80 106,80" fill="rgba(255,255,255,0.3)"/>
+        <line x1="100" y1="80" x2="100" y2="130" stroke="rgba(255,255,255,0.2)" stroke-width="2.5"/>
+        <!-- Left pan (Competitor - heavier/more expensive) -->
+        <line x1="30" y1="82" x2="30" y2="90" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+        <path d="M10 90 Q20 86 30 90 Q40 86 50 90 L46 106 Q30 110 14 106 Z" fill="rgba(204,51,51,0.5)" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+        <!-- Competitor cost bars stacked -->
+        <rect x="17" y="93" width="10" height="8" rx="1.5" fill="rgba(255,180,180,0.6)"/>
+        <rect x="29" y="91" width="10" height="10" rx="1.5" fill="rgba(255,150,150,0.6)"/>
+        <!-- Competitor label -->
+        <text x="30" y="122" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="8" font-weight="600" font-family="Pretendard, sans-serif">경쟁사</text>
+        <!-- Right pan (Ours - lighter/less cost) -->
+        <line x1="170" y1="60" x2="170" y2="68" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+        <path d="M150 68 Q160 64 170 68 Q180 64 190 68 L186 84 Q170 88 154 84 Z" fill="rgba(0,102,204,0.5)" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+        <!-- Our cost bars (smaller) -->
+        <rect x="162" y="72" width="10" height="6" rx="1.5" fill="rgba(180,220,255,0.6)"/>
+        <!-- Our label -->
+        <text x="170" y="100" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="8" font-weight="600" font-family="Pretendard, sans-serif">당사</text>
+        <!-- Savings arrow (going up from right) -->
+        <path d="M170 46 L170 28 L165 34 M170 28 L175 34" stroke="rgba(0,230,118,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Won sign / savings badge -->
+        <rect x="152" y="10" width="36" height="18" rx="9" fill="rgba(0,230,118,0.3)" stroke="rgba(0,230,118,0.5)" stroke-width="1"/>
+        <text x="170" y="23" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-size="10" font-weight="800" font-family="Pretendard, sans-serif">₩↓</text>
+        <!-- Down arrow on competitor side -->
+        <path d="M30 128 L30 140" stroke="rgba(255,100,100,0.4)" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2 2"/>
+        <!-- Label -->
+        <text x="100" y="174" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="10" font-family="Pretendard, sans-serif" font-weight="600">COST COMPARISON</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ── API 불필요 안내 ── -->
+  <div style="text-align:center; padding:10px 16px; margin-bottom:20px; color:#dc2626; font-size:14px; font-weight:700;">* 이 Web App은 AI API 키가 필요 없습니다. 바로 사용 가능합니다.</div>
+
+  <!-- ── 공식 안내 ── -->
+  <div class="vwe-formula-box">
+    <div class="formula-title">절전 비용절감 + 인건비 + 장비 가격 비교 공식</div>
+    <div class="formula-eq">
+      <b>[전력 운영비]</b> KW × 장비 대수 × 운영시간/년 × 비용/KWhr × 운영대수<br>
+      <b>+</b><br>
+      <span class="tag-labor">인건비</span> 장비당 필요인원 × 총 장비 수 × 1인당 연간 인건비<br>
+      <b>+</b><br>
+      <span class="tag-price">장비가격</span> 대당 가격 × 장비 대수 × 운영대수<br><br>
+      <span class="tag-comp">경쟁사</span> 총비용 <b>−</b> <span class="tag-ours">당사</span> 총비용 <b>= TCO 절감액</b>
+    </div>
+  </div>
+
+  <!-- ── 경쟁사 입력 ── -->
+  <div class="vwe-input-group group-comp">
+    <div class="vwe-section-title title-comp">
+      <span class="section-dot dot-comp"></span>
+      <h2>경쟁사 (Before)</h2>
+      <span class="section-sub">기존/경쟁 솔루션</span>
+    </div>
+    <div class="vwe-fields">
+      <div class="vwe-field price-field vwe-field-full">
+        <label>장비 가격 (대당)</label>
+        <input type="text" id="comp-price" inputmode="numeric" placeholder="예: 50,000,000">
+        <span class="unit">원/대</span>
+      </div>
+      <div class="vwe-field">
+        <label>소비전력 (KW)</label>
+        <input type="text" id="comp-kw" inputmode="decimal" placeholder="예: 15">
+        <span class="unit">KW</span>
+      </div>
+      <div class="vwe-field">
+        <label>장비 대수</label>
+        <input type="text" id="comp-qty" inputmode="numeric" placeholder="예: 10">
+        <span class="unit">대</span>
+      </div>
+      <div class="vwe-field">
+        <label>연간 운영시간</label>
+        <input type="text" id="comp-hrs" inputmode="numeric" placeholder="예: 8,760">
+        <span class="unit">시간/년</span>
+      </div>
+      <div class="vwe-field">
+        <label>전기요금 단가</label>
+        <input type="text" id="comp-rate" inputmode="decimal" placeholder="예: 120">
+        <span class="unit">원/KWhr</span>
+      </div>
+      <div class="vwe-field vwe-field-full">
+        <label>운영 장비 대수 (사이트)</label>
+        <input type="text" id="comp-sites" inputmode="numeric" placeholder="예: 5">
+        <span class="unit">개소</span>
+      </div>
+      <div class="vwe-field labor-field">
+        <label>장비당 필요인원</label>
+        <input type="text" id="comp-staff" inputmode="numeric" placeholder="예: 2">
+        <span class="unit">명/대</span>
+      </div>
+      <div class="vwe-field labor-field">
+        <label>1인당 연간 인건비</label>
+        <input type="text" id="comp-salary" inputmode="numeric" placeholder="예: 40,000,000">
+        <span class="unit">원/년</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 동일 조건 체크 ── -->
+  <label class="vwe-same-check">
+    <input type="checkbox" id="same-check" checked>
+    <span>장비 대수 · 운영시간 · 전기요금 · 운영대수 · 1인당 인건비를 경쟁사와 동일하게 적용</span>
+  </label>
+
+  <!-- ── 당사 입력 ── -->
+  <div class="vwe-input-group group-ours">
+    <div class="vwe-section-title title-ours">
+      <span class="section-dot dot-ours"></span>
+      <h2>당사 (After)</h2>
+      <span class="section-sub">우리 솔루션</span>
+    </div>
+    <div class="vwe-fields">
+      <div class="vwe-field price-field vwe-field-full">
+        <label>장비 가격 (대당)</label>
+        <input type="text" id="ours-price" inputmode="numeric" placeholder="예: 65,000,000">
+        <span class="unit">원/대</span>
+      </div>
+      <div class="vwe-field">
+        <label>소비전력 (KW)</label>
+        <input type="text" id="ours-kw" inputmode="decimal" placeholder="예: 8">
+        <span class="unit">KW</span>
+      </div>
+      <div class="vwe-field" id="field-ours-qty">
+        <label>장비 대수</label>
+        <input type="text" id="ours-qty" inputmode="numeric" placeholder="동일 적용">
+        <span class="unit">대</span>
+      </div>
+      <div class="vwe-field" id="field-ours-hrs">
+        <label>연간 운영시간</label>
+        <input type="text" id="ours-hrs" inputmode="numeric" placeholder="동일 적용">
+        <span class="unit">시간/년</span>
+      </div>
+      <div class="vwe-field" id="field-ours-rate">
+        <label>전기요금 단가</label>
+        <input type="text" id="ours-rate" inputmode="decimal" placeholder="동일 적용">
+        <span class="unit">원/KWhr</span>
+      </div>
+      <div class="vwe-field vwe-field-full" id="field-ours-sites">
+        <label>운영 장비 대수 (사이트)</label>
+        <input type="text" id="ours-sites" inputmode="numeric" placeholder="동일 적용">
+        <span class="unit">개소</span>
+      </div>
+      <div class="vwe-field labor-field">
+        <label>장비당 필요인원</label>
+        <input type="text" id="ours-staff" inputmode="numeric" placeholder="예: 1">
+        <span class="unit">명/대</span>
+      </div>
+      <div class="vwe-field labor-field" id="field-ours-salary">
+        <label>1인당 연간 인건비</label>
+        <input type="text" id="ours-salary" inputmode="numeric" placeholder="동일 적용">
+        <span class="unit">원/년</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 시뮬레이션 기간 ── -->
+  <div class="vwe-sim-group">
+    <div class="vwe-section-title">
+      <span class="section-dot"></span>
+      <h2>시뮬레이션 기간</h2>
+      <span class="section-sub">몇 년간 비교?</span>
+    </div>
+    <div class="vwe-fields">
+      <div class="vwe-field vwe-field-full">
+        <label>시뮬레이션 기간 (년)</label>
+        <input type="text" id="sim-years" inputmode="numeric" placeholder="예: 5" value="5">
+        <span class="unit">년</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 계산 버튼 ── -->
+  <button class="vwe-btn" onclick="vweCalc()">비용 절감액 계산하기</button>
+
+  <!-- ── 결과 ── -->
+  <div class="vwe-result" id="vwe-result">
+
+    <!-- 핵심 결과: 연간 총 절감 -->
+    <div class="vwe-result-card">
+      <div class="vwe-result-label">연간 총 비용 절감액 (전력 + 인건비)</div>
+      <div class="vwe-result-value" id="r-total"></div>
+      <div class="vwe-result-sub" id="r-formula"></div>
+    </div>
+
+    <!-- 인건비 절감 카드 -->
+    <div class="vwe-result-card card-green" id="r-labor-card">
+      <div class="vwe-result-label">연간 인건비 절감액</div>
+      <div class="vwe-result-value" id="r-labor-save"></div>
+      <div class="vwe-result-sub" id="r-labor-sub"></div>
+    </div>
+
+    <!-- N년 총 절감 결과 -->
+    <div class="vwe-result-card card-purple">
+      <div class="vwe-result-label" id="r-sim-label"></div>
+      <div class="vwe-result-value" id="r-sim-total"></div>
+      <div class="vwe-result-sub" id="r-sim-sub"></div>
+    </div>
+
+    <!-- 운영비(전력) 비교 -->
+    <div class="vwe-compare">
+      <div class="vwe-compare-item comp-card">
+        <div class="cmp-label">경쟁사 연간 전력비</div>
+        <div class="cmp-value" id="r-comp-cost"></div>
+      </div>
+      <div class="vwe-compare-item ours-card">
+        <div class="cmp-label">당사 연간 전력비</div>
+        <div class="cmp-value" id="r-ours-cost"></div>
+      </div>
+    </div>
+
+    <!-- 인건비 비교 -->
+    <div class="vwe-labor-compare">
+      <div class="vwe-labor-item">
+        <div class="labor-label">경쟁사 연간 인건비</div>
+        <div class="labor-value" id="r-comp-labor"></div>
+      </div>
+      <div class="vwe-labor-item">
+        <div class="labor-label">당사 연간 인건비</div>
+        <div class="labor-value" id="r-ours-labor"></div>
+      </div>
+    </div>
+    <div class="vwe-labor-diff" id="r-labor-diff"></div>
+
+    <!-- 장비 가격 비교 -->
+    <div class="vwe-price-compare">
+      <div class="vwe-price-item">
+        <div class="price-label">경쟁사 장비 총액</div>
+        <div class="price-value" id="r-comp-equip"></div>
+      </div>
+      <div class="vwe-price-item">
+        <div class="price-label">당사 장비 총액</div>
+        <div class="price-value" id="r-ours-equip"></div>
+      </div>
+    </div>
+    <div class="vwe-price-diff" id="r-price-diff"></div>
+
+    <!-- 상세 -->
+    <div class="vwe-detail">
+      <div class="vwe-detail-item">
+        <div class="dt-label">전력비 절감률</div>
+        <div class="dt-value" id="r-pct"></div>
+      </div>
+      <div class="vwe-detail-item">
+        <div class="dt-label">월간 총 절감액</div>
+        <div class="dt-value" id="r-monthly"></div>
+      </div>
+      <div class="vwe-detail-item">
+        <div class="dt-label">KW 절감</div>
+        <div class="dt-value" id="r-kw-diff"></div>
+      </div>
+      <div class="vwe-detail-item">
+        <div class="dt-label">인원 절감</div>
+        <div class="dt-value" id="r-staff-diff"></div>
+      </div>
+      <div class="vwe-detail-item" id="r-roi-box">
+        <div class="dt-label" id="r-roi-label">투자 회수 기간</div>
+        <div class="dt-value" id="r-roi"></div>
+      </div>
+      <div class="vwe-detail-item">
+        <div class="dt-label">연간 총 운영비 절감률</div>
+        <div class="dt-value" id="r-total-pct"></div>
+      </div>
+    </div>
+
+    <!-- 연간 총 비용 그래프 (전력+인건비) -->
+    <div class="vwe-chart">
+      <div class="vwe-chart-title">경쟁사 vs 당사 연간 총 운영비 비교</div>
+      <div class="vwe-chart-sub">전력 운영비 + 인건비</div>
+      <div class="vwe-bar-group">
+        <div class="vwe-bar-label">
+          <span>경쟁사 (Before)</span>
+          <span id="bar-comp-val"></span>
+        </div>
+        <div class="vwe-bar-track">
+          <div class="vwe-bar-fill bar-comp" id="bar-comp"></div>
+        </div>
+      </div>
+      <div class="vwe-bar-group">
+        <div class="vwe-bar-label">
+          <span>당사 (After)</span>
+          <span id="bar-ours-val"></span>
+        </div>
+        <div class="vwe-bar-track">
+          <div class="vwe-bar-fill bar-ours" id="bar-ours"></div>
+        </div>
+      </div>
+      <div class="vwe-savings-bar">
+        <div class="vwe-savings-label" id="r-savings-text"></div>
+      </div>
+    </div>
+
+    <!-- TCO 그래프 -->
+    <div class="vwe-chart">
+      <div class="vwe-chart-title" id="r-tco-title">TCO 비교 (장비 구매 + N년 운영비 + 인건비)</div>
+      <div class="vwe-chart-sub" id="r-tco-sub"></div>
+      <div class="vwe-bar-group">
+        <div class="vwe-bar-label">
+          <span>경쟁사 TCO</span>
+          <span id="bar-tco-comp-val"></span>
+        </div>
+        <div class="vwe-bar-track">
+          <div class="vwe-bar-fill bar-comp" id="bar-tco-comp"></div>
+        </div>
+      </div>
+      <div class="vwe-bar-group">
+        <div class="vwe-bar-label">
+          <span>당사 TCO</span>
+          <span id="bar-tco-ours-val"></span>
+        </div>
+        <div class="vwe-bar-track">
+          <div class="vwe-bar-fill bar-ours" id="bar-tco-ours"></div>
+        </div>
+      </div>
+      <div class="vwe-savings-bar">
+        <div class="vwe-savings-label" id="r-tco-text"></div>
+      </div>
+    </div>
+
+    <!-- 연도별 시뮬레이션 표 -->
+    <div class="vwe-chart">
+      <div class="vwe-chart-title" id="r-table-title">연도별 누적 비용 시뮬레이션</div>
+      <div class="vwe-chart-sub">장비 구매비 + 전력 운영비 + 인건비 누적</div>
+      <div class="vwe-sim-table-wrap">
+        <table class="vwe-sim-table" id="r-sim-table">
+          <thead>
+            <tr>
+              <th>연차</th>
+              <th>경쟁사 누적비용</th>
+              <th>당사 누적비용</th>
+              <th>누적 절감액</th>
+              <th>순이익</th>
+            </tr>
+          </thead>
+          <tbody id="r-sim-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 요약 -->
+    <div class="vwe-summary">
+      <p id="r-summary"></p>
+    </div>
+
+    <button class="vwe-reset" onclick="vweReset()">다시 계산하기</button>
+  </div>
+
+  <!-- 푸터 -->
+  <div class="vwe-footer">
+    <p>&copy; 나눔경영컨설팅 · 김종혁 대표</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* ── 콤마 자동 포맷 ── */
+  document.querySelectorAll('.vwe-calc input[type="text"]').forEach(function(inp){
+    inp.addEventListener('input', function(){
+      var raw = this.value.replace(/[^0-9.]/g, '');
+      if(!raw){ this.value=''; return; }
+      var parts = raw.split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      this.value = parts.length > 1 ? parts[0]+'.'+parts[1] : parts[0];
+    });
+    inp.addEventListener('keydown', function(e){
+      if(e.key==='Enter') vweCalc();
+    });
+  });
+
+  /* ── 동일 적용 체크 ── */
+  var sameCheck = document.getElementById('same-check');
+  var sameFields = ['field-ours-qty','field-ours-hrs','field-ours-rate','field-ours-sites','field-ours-salary'];
+  var sameInputs = ['ours-qty','ours-hrs','ours-rate','ours-sites','ours-salary'];
+
+  function toggleSame(){
+    var checked = sameCheck.checked;
+    sameFields.forEach(function(fid){
+      var el = document.getElementById(fid);
+      if(!el) return;
+      el.style.opacity = checked ? '0.45' : '1';
+      el.style.pointerEvents = checked ? 'none' : 'auto';
+    });
+    if(checked){
+      sameInputs.forEach(function(iid){
+        var el = document.getElementById(iid);
+        if(!el) return;
+        el.value = '';
+        el.placeholder = '동일 적용';
+      });
+    }
+  }
+  sameCheck.addEventListener('change', toggleSame);
+  toggleSame();
+})();
+
+/* ── 유틸 ── */
+function pn(id){
+  return parseFloat(document.getElementById(id).value.replace(/,/g,'')) || 0;
+}
+function formatKRW(n){
+  if(n>=100000000){
+    var e=Math.floor(n/100000000), m=Math.floor((n%100000000)/10000);
+    return m>0? e.toLocaleString()+'억 '+m.toLocaleString()+'만원' : e.toLocaleString()+'억원';
+  }
+  if(n>=10000){ return Math.floor(n/10000).toLocaleString()+'만원'; }
+  return Math.round(n).toLocaleString()+'원';
+}
+function fn(n){ return Math.round(n).toLocaleString(); }
+
+/* ── 계산 ── */
+function vweCalc(){
+  var same = document.getElementById('same-check').checked;
+
+  var cPrice  = pn('comp-price');
+  var cKW     = pn('comp-kw');
+  var cQty    = pn('comp-qty');
+  var cHrs    = pn('comp-hrs');
+  var cRate   = pn('comp-rate');
+  var cSites  = pn('comp-sites');
+  var cStaff  = pn('comp-staff');
+  var cSalary = pn('comp-salary');
+
+  var oPrice  = pn('ours-price');
+  var oKW     = pn('ours-kw');
+  var oQty    = same ? cQty    : pn('ours-qty');
+  var oHrs    = same ? cHrs    : pn('ours-hrs');
+  var oRate   = same ? cRate   : pn('ours-rate');
+  var oSites  = same ? cSites  : pn('ours-sites');
+  var oStaff  = pn('ours-staff');
+  var oSalary = same ? cSalary : pn('ours-salary');
+
+  var simYears = Math.max(1, Math.min(30, Math.round(pn('sim-years')))) || 5;
+
+  /* 검증 */
+  if(cKW<=0||cQty<=0||cHrs<=0||cRate<=0||cSites<=0){
+    alert('경쟁사 운영 항목을 모두 입력해 주세요.'); return;
+  }
+  if(oKW<=0||oQty<=0||oHrs<=0||oRate<=0||oSites<=0){
+    alert('당사 운영 항목을 모두 입력해 주세요.'); return;
+  }
+  if(cPrice<=0||oPrice<=0){
+    alert('경쟁사/당사 장비 가격을 모두 입력해 주세요.'); return;
+  }
+  if(cStaff<=0||cSalary<=0){
+    alert('경쟁사 장비당 필요인원과 인건비를 입력해 주세요.'); return;
+  }
+  if(oStaff<=0||oSalary<=0){
+    alert('당사 장비당 필요인원과 인건비를 입력해 주세요.'); return;
+  }
+
+  /* 전력 운영비 계산 */
+  var compOpex = cKW * cQty * cHrs * cRate * cSites;
+  var oursOpex = oKW * oQty * oHrs * oRate * oSites;
+  var opexSavings = compOpex - oursOpex;
+
+  /* 인건비 계산: 장비당 인원 × 장비대수 × 사이트수 × 연간 인건비 */
+  var compTotalStaff = cStaff * cQty * cSites;
+  var oursTotalStaff = oStaff * oQty * oSites;
+  var compLaborCost = compTotalStaff * cSalary;
+  var oursLaborCost = oursTotalStaff * oSalary;
+  var laborSavings = compLaborCost - oursLaborCost;
+
+  /* 연간 총 운영비 (전력+인건비) */
+  var compAnnualTotal = compOpex + compLaborCost;
+  var oursAnnualTotal = oursOpex + oursLaborCost;
+  var totalAnnualSavings = compAnnualTotal - oursAnnualTotal;
+
+  if(totalAnnualSavings<=0){
+    alert('당사 총 운영비(전력+인건비)가 경쟁사 이상입니다. 입력값을 확인해 주세요.'); return;
+  }
+
+  var opexPct = compOpex > 0 ? ((opexSavings/compOpex)*100).toFixed(1) : '0';
+  var totalPct = compAnnualTotal > 0 ? ((totalAnnualSavings/compAnnualTotal)*100).toFixed(1) : '0';
+  var monthly = totalAnnualSavings/12;
+
+  /* 장비 가격 계산 */
+  var compEquipTotal = cPrice * cQty * cSites;
+  var oursEquipTotal = oPrice * oQty * oSites;
+  var priceDiff = oursEquipTotal - compEquipTotal;
+
+  /* TCO 계산 (장비 + N년 전력운영비 + N년 인건비) */
+  var compTCO = compEquipTotal + (compOpex + compLaborCost) * simYears;
+  var oursTCO = oursEquipTotal + (oursOpex + oursLaborCost) * simYears;
+  var tcoSavings = compTCO - oursTCO;
+
+  /* N년 총 운영비 절감 */
+  var totalSimSavings = totalAnnualSavings * simYears;
+  /* 장비 차이 빼고 순이익 */
+  var netProfit = totalSimSavings - Math.max(0, priceDiff);
+
+  /* 투자 회수 기간 */
+  var roiMonths = 0;
+  var roiText = '';
+  if(priceDiff > 0 && totalAnnualSavings > 0){
+    roiMonths = priceDiff / (totalAnnualSavings / 12);
+    if(roiMonths < 1){
+      roiText = Math.round(roiMonths * 30) + '일';
+    } else if(roiMonths < 12){
+      roiText = roiMonths.toFixed(1) + '개월';
+    } else {
+      var yrs = Math.floor(roiMonths / 12);
+      var mos = Math.round(roiMonths % 12);
+      roiText = yrs + '년' + (mos > 0 ? ' ' + mos + '개월' : '');
+    }
+  } else if(priceDiff <= 0){
+    roiText = '즉시 (장비도 저렴)';
+  }
+
+  /* ── 결과 채우기 ── */
+  document.getElementById('r-total').textContent = formatKRW(totalAnnualSavings);
+  document.getElementById('r-formula').textContent =
+    '전력비 절감 '+formatKRW(Math.abs(opexSavings))+(opexSavings>=0?' + ':' − ')+
+    '인건비 절감 '+formatKRW(Math.abs(laborSavings));
+
+  /* 인건비 절감 카드 */
+  var laborCard = document.getElementById('r-labor-card');
+  if(laborSavings > 0){
+    laborCard.style.display = 'block';
+    document.getElementById('r-labor-save').textContent = formatKRW(laborSavings);
+    document.getElementById('r-labor-sub').textContent =
+      '경쟁사 '+fn(compTotalStaff)+'명 → 당사 '+fn(oursTotalStaff)+'명 ('+fn(compTotalStaff-oursTotalStaff)+'명 절감)';
+  } else if(laborSavings < 0){
+    laborCard.style.display = 'block';
+    document.getElementById('r-labor-save').textContent = '+'+formatKRW(Math.abs(laborSavings));
+    document.getElementById('r-labor-sub').textContent =
+      '인건비 '+formatKRW(Math.abs(laborSavings))+' 증가 — 전력비 절감으로 상쇄';
+  } else {
+    laborCard.style.display = 'none';
+  }
+
+  /* N년 총 절감 카드 */
+  document.getElementById('r-sim-label').textContent = simYears + '년간 총 TCO 절감 효과';
+  document.getElementById('r-sim-total').textContent = formatKRW(tcoSavings);
+  document.getElementById('r-sim-sub').textContent =
+    '운영비 절감 '+formatKRW(totalSimSavings) +
+    (priceDiff !== 0 ? ' + 장비 차이 '+(priceDiff>0?'-':'+')+formatKRW(Math.abs(priceDiff)) : '');
+
+  document.getElementById('r-comp-cost').textContent = formatKRW(compOpex);
+  document.getElementById('r-ours-cost').textContent = formatKRW(oursOpex);
+
+  /* 인건비 비교 */
+  document.getElementById('r-comp-labor').textContent = formatKRW(compLaborCost);
+  document.getElementById('r-ours-labor').textContent = formatKRW(oursLaborCost);
+
+  var laborDiffEl = document.getElementById('r-labor-diff');
+  if(laborSavings > 0){
+    laborDiffEl.className = 'vwe-labor-diff labor-save';
+    laborDiffEl.textContent = '당사 인건비 '+formatKRW(laborSavings)+' 절감 ('+fn(compTotalStaff-oursTotalStaff)+'명 감소)';
+  } else if(laborSavings < 0){
+    laborDiffEl.className = 'vwe-labor-diff labor-more';
+    laborDiffEl.textContent = '당사 인건비 '+formatKRW(Math.abs(laborSavings))+' 증가 ('+fn(oursTotalStaff-compTotalStaff)+'명 추가)';
+  } else {
+    laborDiffEl.className = 'vwe-labor-diff labor-same';
+    laborDiffEl.textContent = '인건비 동일';
+  }
+
+  /* 장비 가격 */
+  document.getElementById('r-comp-equip').textContent = formatKRW(compEquipTotal);
+  document.getElementById('r-ours-equip').textContent = formatKRW(oursEquipTotal);
+
+  var diffEl = document.getElementById('r-price-diff');
+  if(priceDiff > 0){
+    diffEl.className = 'vwe-price-diff price-higher';
+    diffEl.textContent = '당사 장비가 ' + formatKRW(priceDiff) + ' 더 비싸지만, 운영비 절감으로 회수 가능';
+  } else if(priceDiff < 0){
+    diffEl.className = 'vwe-price-diff price-lower';
+    diffEl.textContent = '당사 장비가 ' + formatKRW(Math.abs(priceDiff)) + ' 더 저렴 + 운영비도 절감!';
+  } else {
+    diffEl.className = 'vwe-price-diff price-lower';
+    diffEl.textContent = '장비 가격 동일 — 운영비 절감이 순수 이익!';
+  }
+
+  /* 상세 */
+  document.getElementById('r-pct').textContent = opexPct+'%';
+  document.getElementById('r-monthly').textContent = formatKRW(monthly);
+  document.getElementById('r-kw-diff').textContent = (cKW-oKW>0?'-':'')+fn(Math.abs(cKW-oKW))+' KW';
+  document.getElementById('r-staff-diff').textContent =
+    (compTotalStaff-oursTotalStaff >= 0 ? '-' : '+')+fn(Math.abs(compTotalStaff-oursTotalStaff))+'명';
+  document.getElementById('r-roi').textContent = roiText;
+  document.getElementById('r-total-pct').textContent = totalPct+'%';
+
+  var roiBox = document.getElementById('r-roi-box');
+  if(priceDiff > 0){
+    roiBox.className = 'vwe-detail-item dt-warn';
+    document.getElementById('r-roi-label').textContent = '투자 회수 기간';
+  } else {
+    roiBox.className = 'vwe-detail-item dt-highlight';
+    document.getElementById('r-roi-label').textContent = '투자 회수';
+  }
+
+  /* 연간 총 운영비 그래프 (전력+인건비) */
+  document.getElementById('bar-comp-val').textContent = formatKRW(compAnnualTotal);
+  document.getElementById('bar-ours-val').textContent = formatKRW(oursAnnualTotal);
+  var barComp = document.getElementById('bar-comp');
+  var barOurs = document.getElementById('bar-ours');
+  barComp.style.width='0'; barOurs.style.width='0';
+
+  /* TCO 그래프 */
+  document.getElementById('r-tco-title').textContent = 'TCO 비교 (장비 구매 + '+simYears+'년 운영비 + 인건비)';
+  document.getElementById('r-tco-sub').textContent = '장비 구매비 + '+simYears+'년 누적 전력비 + '+simYears+'년 누적 인건비';
+  document.getElementById('bar-tco-comp-val').textContent = formatKRW(compTCO);
+  document.getElementById('bar-tco-ours-val').textContent = formatKRW(oursTCO);
+  var barTcoComp = document.getElementById('bar-tco-comp');
+  var barTcoOurs = document.getElementById('bar-tco-ours');
+  barTcoComp.style.width='0'; barTcoOurs.style.width='0';
+
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      var annualMax = Math.max(compAnnualTotal, oursAnnualTotal);
+      barComp.style.width = ((compAnnualTotal/annualMax)*100).toFixed(1)+'%';
+      barOurs.style.width = ((oursAnnualTotal/annualMax)*100).toFixed(1)+'%';
+
+      var tcoMax = Math.max(compTCO, oursTCO);
+      barTcoComp.style.width = ((compTCO/tcoMax)*100).toFixed(1)+'%';
+      barTcoOurs.style.width = ((oursTCO/tcoMax)*100).toFixed(1)+'%';
+    });
+  });
+
+  document.getElementById('r-savings-text').textContent =
+    '▼ '+totalPct+'% 절감 — 연간 '+formatKRW(totalAnnualSavings)+' 총 운영비 절감';
+
+  var tcoEl = document.getElementById('r-tco-text');
+  if(tcoSavings > 0){
+    tcoEl.textContent = '▼ TCO '+((tcoSavings/compTCO)*100).toFixed(1)+'% 절감 — '+simYears+'년간 '+formatKRW(tcoSavings)+' 절약';
+    tcoEl.style.color = '#228B22';
+  } else if(tcoSavings < 0){
+    tcoEl.textContent = '△ TCO '+formatKRW(Math.abs(tcoSavings))+' 추가 — 운영비로 회수 필요';
+    tcoEl.style.color = '#B8860B';
+  } else {
+    tcoEl.textContent = 'TCO 동일';
+    tcoEl.style.color = '#003366';
+  }
+
+  /* ── 연도별 시뮬레이션 표 ── */
+  document.getElementById('r-table-title').textContent = simYears+'년간 연도별 누적 비용 시뮬레이션';
+  var tbody = document.getElementById('r-sim-tbody');
+  tbody.innerHTML = '';
+
+  var bepFound = false;
+  var bepYear = 0;
+
+  for(var y = 0; y <= simYears; y++){
+    var cCum = compEquipTotal + (compOpex + compLaborCost) * y;
+    var oCum = oursEquipTotal + (oursOpex + oursLaborCost) * y;
+    var cumSavings = cCum - oCum;
+    /* 순이익: 운영비 절감 누적 − 장비 추가 투자비 */
+    var cumNet = totalAnnualSavings * y - Math.max(0, priceDiff);
+
+    var tr = document.createElement('tr');
+    var isBep = false;
+    if(!bepFound && priceDiff > 0 && y > 0 && cumNet >= 0){
+      bepFound = true;
+      bepYear = y;
+      isBep = true;
+      tr.className = 'row-bep';
+    }
+
+    var yearLabel = y === 0 ? '도입 시점' : y + '년차';
+    var netClass = cumNet >= 0 ? 'td-positive' : 'td-negative';
+    var netPrefix = cumNet >= 0 ? '+' : '-';
+
+    tr.innerHTML =
+      '<td>'+yearLabel+'</td>'+
+      '<td>'+formatKRW(cCum)+'</td>'+
+      '<td>'+formatKRW(oCum)+'</td>'+
+      '<td>'+(cumSavings>=0?'+':'-')+formatKRW(Math.abs(cumSavings))+'</td>'+
+      '<td class="'+netClass+'">'+netPrefix+formatKRW(Math.abs(cumNet))+
+        (isBep ? ' <span class="td-bep-tag">BEP</span>' : '')+
+      '</td>';
+
+    tbody.appendChild(tr);
+  }
+
+  /* 장비가 더 저렴한 경우 BEP는 0년차 */
+  if(priceDiff <= 0){
+    bepFound = true;
+    bepYear = 0;
+  }
+
+  /* 요약 */
+  var summaryParts = [];
+  summaryParts.push('본 솔루션 도입 시 경쟁사 대비 소비전력 <strong>'+fn(cKW-oKW)+' KW 절감</strong>으로, 연간 전력비 <strong>'+formatKRW(Math.abs(opexSavings))+'</strong> '+(opexSavings>=0?'절감':'추가')+'이 예상됩니다.');
+
+  if(laborSavings > 0){
+    summaryParts.push('인력은 총 <strong class="summary-green">'+fn(compTotalStaff-oursTotalStaff)+'명 절감</strong>되어, 연간 인건비 <strong class="summary-green">'+formatKRW(laborSavings)+'</strong>을 절약합니다.');
+  } else if(laborSavings < 0){
+    summaryParts.push('인건비는 '+formatKRW(Math.abs(laborSavings))+' 증가하지만, 전력비 절감으로 충분히 상쇄됩니다.');
+  }
+
+  summaryParts.push('전력비+인건비 합산 연간 총 <strong>'+formatKRW(totalAnnualSavings)+'</strong> 절감 (<strong>'+totalPct+'%</strong> 효율 개선), 월 평균 <strong>'+formatKRW(monthly)+'</strong>의 가치를 창출합니다.');
+
+  if(priceDiff > 0){
+    summaryParts.push('장비 구매비는 '+formatKRW(priceDiff)+' 더 높지만, 운영비 절감으로 <strong class="summary-green">약 '+roiText+'</strong> 후 투자금을 회수할 수 있습니다.');
+  } else if(priceDiff < 0){
+    summaryParts.push('장비 가격도 <strong class="summary-green">'+formatKRW(Math.abs(priceDiff))+' 저렴</strong>하여, 구매 시점부터 즉시 비용 절감 효과가 발생합니다.');
+  }
+
+  summaryParts.push('<strong class="summary-purple">'+simYears+'년간 총 '+formatKRW(tcoSavings > 0 ? tcoSavings : 0)+'</strong>의 TCO 절감 효과가 발생합니다.');
+
+  document.getElementById('r-summary').innerHTML = summaryParts.join(' ');
+
+  var resultEl = document.getElementById('vwe-result');
+  resultEl.style.display='block';
+  resultEl.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function vweReset(){
+  document.querySelectorAll('.vwe-calc input[type="text"]').forEach(function(i){
+    if(i.id === 'sim-years'){ i.value = '5'; return; }
+    i.value = '';
+  });
+  document.getElementById('same-check').checked=true;
+  document.getElementById('same-check').dispatchEvent(new Event('change'));
+  document.getElementById('vwe-result').style.display='none';
+  document.querySelector('.vwe-header').scrollIntoView({behavior:'smooth'});
+}
+</script>
+
+</body>
+</html>
