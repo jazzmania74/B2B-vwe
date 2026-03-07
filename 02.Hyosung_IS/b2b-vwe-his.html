@@ -1,0 +1,2015 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Ready Storage TCO 계산기 | HIS 효성인포메이션시스템</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --his-primary: #0F4C81;
+    --his-light: #1A73B5;
+    --his-dark: #0A2E50;
+    --his-accent: #00B4D8;
+    --comp-red: #CC3333;
+    --comp-dell: #0076CE;
+    --comp-hpe: #01A982;
+    --bg-main: #F3F6FA;
+    --bg-white: #FFFFFF;
+    --text-primary: #1A1A2E;
+    --text-secondary: #5A6070;
+    --text-light: #8A90A0;
+    --border: #E2E8F0;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --gold: #B8860B;
+    --green: #2E8B57;
+    --purple: #6B4C9A;
+  }
+
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .tco-calc {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  /* ── 헤더 ── */
+  .tco-header {
+    background: linear-gradient(135deg, var(--his-primary) 0%, var(--his-dark) 60%, #0D1B2A 100%);
+    border-radius: var(--radius-lg);
+    padding: 36px 40px;
+    margin-bottom: 28px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .tco-header::before {
+    content: '';
+    position: absolute;
+    top: -60%;
+    right: -5%;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(0,180,216,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .tco-header::after {
+    content: '';
+    position: absolute;
+    bottom: -40%;
+    left: 10%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .header-text {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+  }
+  .tco-badge {
+    display: inline-block;
+    background: rgba(0,180,216,0.2);
+    border: 1px solid rgba(0,180,216,0.4);
+    color: #7DD3FC;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  .tco-header h1 {
+    font-size: clamp(20px, 5vw, 30px);
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .tco-header .tco-full {
+    font-size: clamp(12px, 2.8vw, 15px);
+    color: rgba(255,255,255,0.7);
+    margin-top: 4px;
+  }
+  .tco-header .tco-subtitle {
+    font-size: clamp(12px, 2.8vw, 14px);
+    color: rgba(255,255,255,0.6);
+    margin-top: 8px;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+  .tco-header .tco-subtitle b {
+    color: #7DD3FC;
+  }
+  .header-illustration {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    width: 180px;
+    height: 160px;
+    opacity: 0.92;
+  }
+
+  /* ── 벤더 선택 ── */
+  .tco-vendor-select {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--his-accent);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+  .vendor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .vendor-btn {
+    padding: 14px 16px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-white);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    font-family: inherit;
+  }
+  .vendor-btn:hover {
+    border-color: var(--his-accent);
+    background: #F0FAFF;
+  }
+  .vendor-btn.active {
+    border-color: var(--comp-red);
+    background: #FFF5F5;
+    box-shadow: 0 0 0 3px rgba(204,51,51,0.1);
+  }
+  .vendor-btn .vendor-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .vendor-btn .vendor-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  /* ── 공식 안내 ── */
+  .tco-formula-box {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--his-primary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .tco-formula-box .formula-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--his-dark);
+    margin-bottom: 12px;
+  }
+  .tco-formula-box .formula-eq {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    word-break: keep-all;
+  }
+  .formula-eq .tag {
+    display: inline-block;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+  .tag-equip { background: var(--gold); }
+  .tag-power { background: #E05555; }
+  .tag-cool { background: #FF8C00; }
+  .tag-labor { background: var(--green); }
+  .tag-sw { background: #6366F1; }
+  .tag-maint { background: #8B5CF6; }
+  .tag-rack { background: #64748B; }
+  .tag-gpu { background: #EC4899; }
+  .tag-comp { background: var(--comp-red); }
+  .tag-ours { background: var(--his-primary); }
+
+  /* ── 섹션 제목 ── */
+  .tco-section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+  }
+  .tco-section-title .section-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .tco-section-title h2 {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .tco-section-title .section-sub {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .dot-comp { background: #FEE2E2; color: var(--comp-red); }
+  .title-comp h2 { color: var(--comp-red); }
+  .dot-ours { background: #E0F2FE; color: var(--his-primary); }
+  .title-ours h2 { color: var(--his-dark); }
+
+  /* ── 입력 그룹 ── */
+  .tco-input-group {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+  }
+  .tco-input-group.group-comp { border-left: 4px solid var(--comp-red); }
+  .tco-input-group.group-ours { border-left: 4px solid var(--his-primary); }
+
+  .tco-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .tco-fields .field-full { grid-column: 1 / -1; }
+  .tco-fields .field-third { }
+
+  .tco-field {
+    background: #FAFBFC;
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    position: relative;
+    transition: box-shadow 0.2s;
+  }
+  .tco-field:focus-within { box-shadow: 0 0 0 3px rgba(15,76,129,0.1); }
+  .group-comp .tco-field:focus-within { box-shadow: 0 0 0 3px rgba(204,51,51,0.1); }
+
+  .tco-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--his-dark);
+    margin-bottom: 6px;
+  }
+  .group-comp .tco-field label { color: var(--comp-red); }
+
+  .tco-field input, .tco-field select {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    color: var(--his-dark);
+    background: var(--bg-white);
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  .group-comp .tco-field input { color: var(--comp-red); }
+  .tco-field input:focus, .tco-field select:focus { border-color: var(--his-primary); }
+  .group-comp .tco-field input:focus { border-color: var(--comp-red); }
+  .tco-field input::placeholder { color: var(--text-light); font-weight: 400; }
+  .tco-field .unit {
+    position: absolute;
+    right: 28px;
+    bottom: 22px;
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 600;
+    pointer-events: none;
+  }
+  .tco-field .field-hint {
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+
+  /* 색상 강조 필드 */
+  .tco-field.price-field { background: #FFFBF0; border: 2px solid #F0E0B0; }
+  .tco-field.price-field label { color: var(--gold); }
+  .tco-field.price-field input { color: var(--gold); border-color: #E8D5A0; }
+  .tco-field.price-field input:focus { border-color: var(--gold); }
+  .tco-field.price-field:focus-within { box-shadow: 0 0 0 2px var(--gold); }
+  .group-comp .tco-field.price-field label { color: var(--gold); }
+  .group-comp .tco-field.price-field input { color: var(--gold); }
+
+  .tco-field.labor-field { background: #F0FFF5; border: 2px solid #B0E0C0; }
+  .tco-field.labor-field label { color: var(--green); }
+  .tco-field.labor-field input { color: var(--green); border-color: #A0D8B0; }
+  .tco-field.labor-field input:focus { border-color: var(--green); }
+  .tco-field.labor-field:focus-within { box-shadow: 0 0 0 2px var(--green); }
+  .group-comp .tco-field.labor-field label { color: var(--green); }
+  .group-comp .tco-field.labor-field input { color: var(--green); }
+
+  .tco-field.sw-field { background: #F5F3FF; border: 2px solid #DDD6FE; }
+  .tco-field.sw-field label { color: #6366F1; }
+  .tco-field.sw-field input { color: #6366F1; border-color: #C4B5FD; }
+  .tco-field.sw-field input:focus { border-color: #6366F1; }
+  .tco-field.sw-field:focus-within { box-shadow: 0 0 0 2px #6366F1; }
+  .group-comp .tco-field.sw-field label { color: #6366F1; }
+  .group-comp .tco-field.sw-field input { color: #6366F1; }
+
+  .tco-field.gpu-field { background: #FDF2F8; border: 2px solid #FBCFE8; }
+  .tco-field.gpu-field label { color: #EC4899; }
+  .tco-field.gpu-field input { color: #EC4899; border-color: #F9A8D4; }
+  .tco-field.gpu-field input:focus { border-color: #EC4899; }
+  .tco-field.gpu-field:focus-within { box-shadow: 0 0 0 2px #EC4899; }
+  .group-comp .tco-field.gpu-field label { color: #EC4899; }
+  .group-comp .tco-field.gpu-field input { color: #EC4899; }
+
+  /* 서브 그룹 */
+  .tco-sub-group {
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 18px 16px;
+    margin-top: 14px;
+  }
+  .tco-sub-group .sub-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tco-sub-group .sub-title .tag {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+
+  /* 시뮬레이션 기간 필드 */
+  .tco-sim-group {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--purple);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+  }
+  .tco-sim-group .tco-section-title h2 { color: var(--purple); }
+  .tco-sim-group .section-dot { background: var(--purple); color: #fff; }
+  .tco-sim-group .tco-field { background: #F8F5FF; border: 2px solid #E0D5F0; }
+  .tco-sim-group .tco-field label { color: var(--purple); }
+  .tco-sim-group .tco-field input { color: var(--purple); border-color: #D0C5E0; }
+  .tco-sim-group .tco-field input:focus { border-color: var(--purple); }
+  .tco-sim-group .tco-field:focus-within { box-shadow: 0 0 0 2px var(--purple); }
+
+  /* 동일 적용 체크 */
+  .tco-same-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 14px 20px;
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .tco-same-check:hover { background: #F0FAFF; border-color: var(--his-accent); }
+  .tco-same-check input[type="checkbox"] {
+    width: 18px; height: 18px;
+    accent-color: var(--his-primary);
+    cursor: pointer;
+  }
+  .tco-same-check span { font-size: 14px; color: var(--his-dark); font-weight: 600; }
+
+  /* 계산 버튼 */
+  .tco-btn {
+    width: 100%;
+    padding: 16px 28px;
+    background: linear-gradient(135deg, var(--his-primary), var(--his-dark));
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 14px rgba(15,76,129,0.3);
+    letter-spacing: 0.5px;
+  }
+  .tco-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(15,76,129,0.4); }
+  .tco-btn:active { transform: translateY(0); }
+
+  /* AI 분석 버튼 */
+  .tco-ai-btn {
+    width: 100%;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #7C3AED, #4F46E5);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 14px rgba(124,58,237,0.3);
+    margin-top: 12px;
+    display: none;
+  }
+  .tco-ai-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,58,237,0.4); }
+  .tco-ai-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  /* AI 분석 결과 */
+  .tco-ai-result {
+    display: none;
+    background: linear-gradient(135deg, #1E1B4B 0%, #312E81 100%);
+    border-radius: var(--radius-md);
+    padding: 28px;
+    margin-top: 20px;
+    color: #E0E7FF;
+    font-size: 14px;
+    line-height: 1.8;
+    word-break: keep-all;
+    white-space: pre-wrap;
+  }
+  .tco-ai-result .ai-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #A5B4FC;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tco-ai-result .ai-body { color: #C7D2FE; }
+
+  /* API 키 입력 */
+  .tco-api-group {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    border-left: 4px solid #7C3AED;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .tco-api-group .api-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #7C3AED;
+    margin-bottom: 8px;
+  }
+  .tco-api-group .api-desc {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-bottom: 10px;
+  }
+  .tco-api-group input {
+    width: 100%;
+    border: 1.5px solid #DDD6FE;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: monospace;
+    color: #7C3AED;
+    outline: none;
+  }
+  .tco-api-group input:focus { border-color: #7C3AED; }
+  .tco-api-group input::placeholder { color: var(--text-light); font-family: inherit; }
+
+  /* ── 결과 ── */
+  .tco-result {
+    display: none;
+    margin-top: 32px;
+    animation: tcoFadeIn 0.5s ease;
+  }
+  @keyframes tcoFadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 핵심 카드 */
+  .tco-result-card {
+    background: linear-gradient(135deg, var(--his-primary) 0%, var(--his-dark) 100%);
+    border-radius: var(--radius-lg);
+    padding: 28px 24px;
+    text-align: center;
+    color: #fff;
+    margin-bottom: 24px;
+  }
+  .tco-result-label {
+    font-size: clamp(13px, 3vw, 16px);
+    opacity: 0.85;
+    margin-bottom: 6px;
+  }
+  .tco-result-value {
+    font-size: clamp(30px, 8vw, 52px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    line-height: 1.2;
+    word-break: keep-all;
+  }
+  .tco-result-sub {
+    font-size: clamp(11px, 2.5vw, 14px);
+    opacity: 0.6;
+    margin-top: 8px;
+    word-break: keep-all;
+  }
+  .tco-result-card.card-purple { background: linear-gradient(135deg, #6B4C9A 0%, #8B6FBF 100%); }
+  .tco-result-card.card-green { background: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%); }
+  .tco-result-card.card-pink { background: linear-gradient(135deg, #BE185D 0%, #EC4899 100%); }
+
+  /* 비교 카드 */
+  .tco-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .tco-compare-item {
+    border-radius: var(--radius-md);
+    padding: 20px 16px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+  }
+  .tco-compare-item.comp-card { background: #FFF5F5; border: 1px solid #FFDDDD; }
+  .tco-compare-item.ours-card { background: #F0F7FF; border: 1px solid #CCE0FF; }
+  .tco-compare-item .cmp-label { font-size: clamp(11px, 2.5vw, 13px); font-weight: 700; margin-bottom: 4px; }
+  .comp-card .cmp-label { color: var(--comp-red); }
+  .ours-card .cmp-label { color: var(--his-dark); }
+  .tco-compare-item .cmp-value { font-size: clamp(18px, 4.5vw, 26px); font-weight: 900; word-break: keep-all; }
+  .comp-card .cmp-value { color: var(--comp-red); }
+  .ours-card .cmp-value { color: var(--his-dark); }
+
+  /* 비용 항목별 비교 */
+  .tco-cost-breakdown {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .tco-cost-breakdown .cb-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--his-dark);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .cb-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 1fr 100px;
+    gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid #F1F5F9;
+    align-items: center;
+    font-size: 13px;
+  }
+  .cb-row:last-child { border-bottom: none; }
+  .cb-row.cb-header {
+    font-weight: 700;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 12px;
+  }
+  .cb-row.cb-total {
+    border-top: 2px solid var(--his-dark);
+    font-weight: 800;
+    font-size: 14px;
+    padding-top: 14px;
+  }
+  .cb-row .cb-label { font-weight: 600; color: var(--text-primary); }
+  .cb-row .cb-comp { text-align: right; color: var(--comp-red); font-weight: 700; }
+  .cb-row .cb-ours { text-align: right; color: var(--his-dark); font-weight: 700; }
+  .cb-row .cb-diff { text-align: right; font-weight: 700; }
+  .cb-diff.positive { color: var(--green); }
+  .cb-diff.negative { color: var(--comp-red); }
+
+  /* 상세 */
+  .tco-detail {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .tco-detail-item {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    text-align: center;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+  .tco-detail-item .dt-label { font-size: 13px; color: var(--text-light); margin-bottom: 4px; }
+  .tco-detail-item .dt-value { font-size: 20px; font-weight: 800; color: var(--his-dark); }
+  .tco-detail-item.dt-highlight { background: #F0FFF0; border: 2px solid #B0E0B0; }
+  .tco-detail-item.dt-highlight .dt-value { color: #228B22; }
+  .tco-detail-item.dt-warn { background: #FFF8F0; border: 2px solid #F0D8A0; }
+  .tco-detail-item.dt-warn .dt-value { color: var(--gold); }
+
+  /* 막대 그래프 */
+  .tco-chart {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    padding: 28px 24px;
+    margin-bottom: 20px;
+  }
+  .tco-chart-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--his-dark);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .tco-chart-sub {
+    font-size: clamp(11px, 2.5vw, 12px);
+    color: #999;
+    text-align: center;
+    margin-top: 4px;
+    margin-bottom: 16px;
+  }
+  .tco-bar-group { margin-bottom: 16px; }
+  .tco-bar-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: clamp(12px, 2.8vw, 14px);
+    font-weight: 600;
+  }
+  .tco-bar-label span:first-child { color: #555; }
+  .tco-bar-label span:last-child { font-weight: 800; color: var(--his-dark); }
+  .tco-bar-track {
+    width: 100%;
+    height: 36px;
+    background: #E0E0E0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .tco-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    width: 0;
+    transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    min-width: 40px;
+  }
+  .bar-comp { background: linear-gradient(90deg, #CC3333 0%, #E05555 100%); }
+  .bar-ours { background: linear-gradient(90deg, var(--his-dark) 0%, var(--his-primary) 100%); }
+  .tco-savings-bar { margin-top: 20px; padding-top: 16px; border-top: 2px dashed #CCC; }
+  .tco-savings-label {
+    text-align: center;
+    font-size: clamp(14px, 3.2vw, 17px);
+    font-weight: 800;
+    color: var(--comp-red);
+  }
+
+  /* 스택 바 차트 */
+  .tco-stack-chart { margin-top: 20px; }
+  .stack-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+    justify-content: center;
+  }
+  .stack-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+  .stack-legend-item .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+  .stack-bar-wrap { margin-bottom: 12px; }
+  .stack-bar-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 6px;
+  }
+  .stack-bar {
+    display: flex;
+    height: 40px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #E8E8E8;
+  }
+  .stack-bar .seg {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  /* 연도별 시뮬레이션 표 */
+  .tco-sim-table-wrap {
+    margin-bottom: 24px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tco-sim-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: clamp(11px, 2.6vw, 13px);
+    min-width: 700px;
+  }
+  .tco-sim-table thead { background: var(--his-dark); color: #fff; }
+  .tco-sim-table th {
+    padding: 10px 8px;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .tco-sim-table tbody tr { border-bottom: 1px solid #E8E8E8; transition: background 0.15s; }
+  .tco-sim-table tbody tr:hover { background: #F0F7FF; }
+  .tco-sim-table tbody tr.row-bep { background: #FFFFF0; border: 2px solid #E8A817; }
+  .tco-sim-table td {
+    padding: 10px 8px;
+    text-align: right;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+  }
+  .tco-sim-table td:first-child { text-align: center; font-weight: 800; color: var(--his-dark); }
+  .tco-sim-table .td-negative { color: var(--comp-red); }
+  .tco-sim-table .td-positive { color: #228B22; }
+  .tco-sim-table .td-bep-tag {
+    display: inline-block;
+    background: #E8A817;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  /* 요약 */
+  .tco-summary {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--his-primary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+  .tco-summary p {
+    font-size: 15px;
+    color: var(--his-dark);
+    font-weight: 600;
+    line-height: 1.7;
+    word-break: keep-all;
+  }
+  .tco-summary strong {
+    font-size: clamp(16px, 3.8vw, 22px);
+    color: var(--comp-red);
+    font-weight: 900;
+  }
+  .tco-summary .s-green { color: #228B22; }
+  .tco-summary .s-purple { color: var(--purple); }
+  .tco-summary .s-pink { color: #BE185D; }
+
+  /* 리셋 */
+  .tco-reset {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: var(--bg-white);
+    color: var(--text-light);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: all 0.2s;
+  }
+  .tco-reset:hover { border-color: var(--his-primary); color: var(--his-primary); }
+
+  /* 푸터 */
+  .tco-footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-light);
+    font-size: 12px;
+  }
+
+  /* 반응형 */
+  @media (max-width: 900px) {
+    .tco-detail { grid-template-columns: 1fr 1fr; }
+    .cb-row { grid-template-columns: 100px 1fr 1fr 80px; font-size: 12px; }
+  }
+  @media (max-width: 768px) {
+    .tco-header { flex-direction: column; text-align: center; }
+    .header-illustration { width: 140px; height: 120px; order: -1; }
+  }
+  @media (max-width: 600px) {
+    .tco-calc { padding: 12px 12px 40px; }
+    .tco-header { padding: 24px 20px; }
+    .tco-header h1 { font-size: 20px; }
+    .tco-input-group { padding: 20px 16px; }
+    .tco-sim-group { padding: 20px 16px; }
+    .header-illustration { width: 120px; height: 100px; }
+    .tco-fields { grid-template-columns: 1fr; }
+    .tco-compare { grid-template-columns: 1fr; }
+    .tco-detail { grid-template-columns: 1fr; }
+    .vendor-grid { grid-template-columns: 1fr; }
+    .cb-row { grid-template-columns: 1fr; gap: 4px; }
+    .cb-row .cb-comp, .cb-row .cb-ours, .cb-row .cb-diff { text-align: left; }
+    .cb-header { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="tco-calc">
+
+  <!-- ── 헤더 ── -->
+  <div class="tco-header">
+    <div class="header-text">
+      <span class="tco-badge">HIS 효성인포메이션시스템</span>
+      <h1>AI Ready Storage TCO 계산기</h1>
+      <div class="tco-full">Total Cost of Ownership — AI 워크로드 최적화 스토리지 비교</div>
+      <div class="tco-subtitle">Dell PowerMax, HPE Alletra 등 경쟁 솔루션 대비<br>HIS 스토리지의 <b>TCO 절감 효과</b>를 한눈에 보여드립니다</div>
+    </div>
+    <div class="header-illustration">
+      <svg viewBox="0 0 200 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Storage rack -->
+        <rect x="55" y="20" width="90" height="130" rx="6" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+        <!-- Drive bays -->
+        <rect x="62" y="28" width="76" height="14" rx="3" fill="rgba(0,180,216,0.3)" stroke="rgba(0,180,216,0.5)" stroke-width="0.8"/>
+        <rect x="62" y="46" width="76" height="14" rx="3" fill="rgba(0,180,216,0.25)" stroke="rgba(0,180,216,0.4)" stroke-width="0.8"/>
+        <rect x="62" y="64" width="76" height="14" rx="3" fill="rgba(0,180,216,0.2)" stroke="rgba(0,180,216,0.35)" stroke-width="0.8"/>
+        <rect x="62" y="82" width="76" height="14" rx="3" fill="rgba(0,180,216,0.15)" stroke="rgba(0,180,216,0.3)" stroke-width="0.8"/>
+        <!-- LED indicators -->
+        <circle cx="70" cy="35" r="2" fill="rgba(0,255,128,0.7)"/>
+        <circle cx="70" cy="53" r="2" fill="rgba(0,255,128,0.7)"/>
+        <circle cx="70" cy="71" r="2" fill="rgba(0,255,128,0.6)"/>
+        <circle cx="70" cy="89" r="2" fill="rgba(0,255,128,0.5)"/>
+        <!-- AI chip icon -->
+        <rect x="75" y="105" width="50" height="35" rx="4" fill="rgba(124,58,237,0.3)" stroke="rgba(167,139,250,0.5)" stroke-width="1"/>
+        <text x="100" y="126" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10" font-weight="800" font-family="Pretendard, sans-serif">AI</text>
+        <!-- Connection lines -->
+        <line x1="75" y1="122" x2="55" y2="122" stroke="rgba(167,139,250,0.3)" stroke-width="1" stroke-dasharray="2 2"/>
+        <line x1="125" y1="122" x2="145" y2="122" stroke="rgba(167,139,250,0.3)" stroke-width="1" stroke-dasharray="2 2"/>
+        <!-- GPU icon left -->
+        <rect x="20" y="110" width="30" height="24" rx="3" fill="rgba(236,72,153,0.25)" stroke="rgba(236,72,153,0.4)" stroke-width="0.8"/>
+        <text x="35" y="125" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="7" font-weight="700" font-family="Pretendard, sans-serif">GPU</text>
+        <!-- GPU icon right -->
+        <rect x="150" y="110" width="30" height="24" rx="3" fill="rgba(236,72,153,0.25)" stroke="rgba(236,72,153,0.4)" stroke-width="0.8"/>
+        <text x="165" y="125" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="7" font-weight="700" font-family="Pretendard, sans-serif">GPU</text>
+        <!-- Cost down arrow -->
+        <path d="M170 50 L170 32 L165 38 M170 32 L175 38" stroke="rgba(0,230,118,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="155" y="14" width="32" height="16" rx="8" fill="rgba(0,230,118,0.3)" stroke="rgba(0,230,118,0.5)" stroke-width="1"/>
+        <text x="171" y="25" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-size="9" font-weight="800" font-family="Pretendard, sans-serif">TCO</text>
+        <!-- Label -->
+        <text x="100" y="170" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9" font-family="Pretendard, sans-serif" font-weight="600">AI STORAGE COMPARISON</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ── 안내 ── -->
+  <div style="text-align:center; padding:10px 16px; margin-bottom:20px; color:#7C3AED; font-size:14px; font-weight:700;">* AI API 키 입력은 선택사항입니다. 기본 TCO 계산은 API 없이 즉시 사용 가능합니다.</div>
+
+  <!-- ── 공식 안내 ── -->
+  <div class="tco-formula-box">
+    <div class="formula-title">AI Ready Storage TCO 종합 비교 공식</div>
+    <div class="formula-eq">
+      <span class="tag tag-equip">장비 구매</span> 대당 가격 x 장비 대수 x 사이트 수<br>
+      <b>+</b> <span class="tag tag-power">전력비</span> KW x 장비 대수 x 운영시간/년 x 전기단가 x 사이트 수<br>
+      <b>+</b> <span class="tag tag-cool">냉각비</span> 전력비 x (PUE - 1)<br>
+      <b>+</b> <span class="tag tag-rack">랙 비용</span> 랙 U수 x 장비 대수 x 월 랙비 x 12 x 사이트 수<br>
+      <b>+</b> <span class="tag tag-sw">SW 라이선스</span> TB당 라이선스비 x 유효용량<br>
+      <b>+</b> <span class="tag tag-maint">유지보수</span> 장비 총액 x 유지보수율<br>
+      <b>+</b> <span class="tag tag-labor">인건비</span> 장비당 인원 x 총 장비 수 x 연봉<br>
+      <b>+</b> <span class="tag tag-gpu">GPU 유휴비용</span> GPU 수 x 시간당비용 x 연간시간 x 병목률<br><br>
+      <span class="tag tag-comp">경쟁사</span> TCO <b>-</b> <span class="tag tag-ours">HIS</span> TCO <b>= 총 TCO 절감액</b>
+    </div>
+  </div>
+
+  <!-- ── 경쟁사 벤더 선택 ── -->
+  <div class="tco-vendor-select">
+    <div class="tco-section-title">
+      <span class="section-dot dot-comp" style="font-size:12px;">VS</span>
+      <h2 style="color:var(--comp-red);">경쟁사 선택</h2>
+      <span class="section-sub">비교 대상 벤더</span>
+    </div>
+    <div class="vendor-grid">
+      <button class="vendor-btn active" onclick="selectVendor('dell')" id="btn-dell">
+        <div class="vendor-name">Dell PowerMax</div>
+        <div class="vendor-desc">Dell Technologies 엔터프라이즈 스토리지</div>
+      </button>
+      <button class="vendor-btn" onclick="selectVendor('hpe')" id="btn-hpe">
+        <div class="vendor-name">HPE Alletra</div>
+        <div class="vendor-desc">Hewlett Packard Enterprise 클라우드 스토리지</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── 경쟁사 입력 ── -->
+  <div class="tco-input-group group-comp">
+    <div class="tco-section-title title-comp">
+      <span class="section-dot dot-comp"></span>
+      <h2 id="comp-title">경쟁사 — Dell PowerMax</h2>
+      <span class="section-sub">기존/경쟁 솔루션</span>
+    </div>
+    <div class="tco-fields">
+      <!-- 기본 장비 -->
+      <div class="tco-field price-field field-full">
+        <label>장비 가격 (대당)</label>
+        <input type="text" id="comp-price" inputmode="numeric" placeholder="예: 800,000,000">
+        <span class="unit">원/대</span>
+      </div>
+      <div class="tco-field">
+        <label>장비 대수</label>
+        <input type="text" id="comp-qty" inputmode="numeric" placeholder="예: 4">
+        <span class="unit">대</span>
+      </div>
+      <div class="tco-field">
+        <label>운영 사이트 수</label>
+        <input type="text" id="comp-sites" inputmode="numeric" placeholder="예: 2">
+        <span class="unit">개소</span>
+      </div>
+      <div class="tco-field">
+        <label>Raw 용량 (대당)</label>
+        <input type="text" id="comp-raw-tb" inputmode="numeric" placeholder="예: 500">
+        <span class="unit">TB</span>
+      </div>
+      <div class="tco-field">
+        <label>데이터 축소율 (압축+중복제거)</label>
+        <input type="text" id="comp-reduction" inputmode="decimal" placeholder="예: 3.0" value="3.0">
+        <span class="unit">:1</span>
+        <div class="field-hint">유효용량 = Raw x 축소율</div>
+      </div>
+    </div>
+
+    <!-- 전력 & 냉각 -->
+    <div class="tco-sub-group">
+      <div class="sub-title"><span class="tag tag-power">전력</span> <span class="tag tag-cool">냉각</span> 전력 및 냉각 비용</div>
+      <div class="tco-fields">
+        <div class="tco-field">
+          <label>소비전력 (대당)</label>
+          <input type="text" id="comp-kw" inputmode="decimal" placeholder="예: 12">
+          <span class="unit">KW</span>
+        </div>
+        <div class="tco-field">
+          <label>연간 운영시간</label>
+          <input type="text" id="comp-hrs" inputmode="numeric" placeholder="예: 8,760" value="8,760">
+          <span class="unit">시간/년</span>
+        </div>
+        <div class="tco-field">
+          <label>전기요금 단가</label>
+          <input type="text" id="comp-rate" inputmode="decimal" placeholder="예: 120" value="120">
+          <span class="unit">원/KWh</span>
+        </div>
+        <div class="tco-field">
+          <label>PUE (냉각효율)</label>
+          <input type="text" id="comp-pue" inputmode="decimal" placeholder="예: 1.6" value="1.6">
+          <span class="unit">배</span>
+          <div class="field-hint">1.0=냉각비 0, 1.6=전력의 60% 추가</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 랙 & SW -->
+    <div class="tco-sub-group">
+      <div class="sub-title"><span class="tag tag-rack">랙</span> <span class="tag tag-sw">SW</span> <span class="tag tag-maint">유지보수</span> 인프라 비용</div>
+      <div class="tco-fields">
+        <div class="tco-field">
+          <label>랙 점유 U수 (대당)</label>
+          <input type="text" id="comp-rack-u" inputmode="numeric" placeholder="예: 42">
+          <span class="unit">U</span>
+        </div>
+        <div class="tco-field">
+          <label>U당 월 임대비</label>
+          <input type="text" id="comp-rack-cost" inputmode="numeric" placeholder="예: 50,000" value="50,000">
+          <span class="unit">원/U/월</span>
+        </div>
+        <div class="tco-field">
+          <label>연간 SW 라이선스 (TB당)</label>
+          <input type="text" id="comp-sw-tb" inputmode="numeric" placeholder="예: 500,000">
+          <span class="unit">원/TB/년</span>
+        </div>
+        <div class="tco-field">
+          <label>연간 유지보수 비율</label>
+          <input type="text" id="comp-maint-pct" inputmode="decimal" placeholder="예: 12" value="12">
+          <span class="unit">% (장비가 대비)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 인건비 -->
+    <div class="tco-sub-group">
+      <div class="sub-title"><span class="tag tag-labor">인건비</span> 운영 인력 비용</div>
+      <div class="tco-fields">
+        <div class="tco-field labor-field">
+          <label>장비당 필요 관리인원</label>
+          <input type="text" id="comp-staff" inputmode="decimal" placeholder="예: 1.5">
+          <span class="unit">명/대</span>
+        </div>
+        <div class="tco-field labor-field">
+          <label>1인당 연간 인건비</label>
+          <input type="text" id="comp-salary" inputmode="numeric" placeholder="예: 60,000,000" value="60,000,000">
+          <span class="unit">원/년</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GPU 유휴 비용 -->
+    <div class="tco-sub-group">
+      <div class="sub-title"><span class="tag tag-gpu">GPU</span> AI 워크로드 — 스토리지 병목에 의한 GPU 유휴 비용</div>
+      <div class="tco-fields">
+        <div class="tco-field gpu-field">
+          <label>GPU 카드 수</label>
+          <input type="text" id="comp-gpu-cnt" inputmode="numeric" placeholder="예: 32">
+          <span class="unit">장</span>
+        </div>
+        <div class="tco-field gpu-field">
+          <label>GPU 시간당 비용</label>
+          <input type="text" id="comp-gpu-cost" inputmode="numeric" placeholder="예: 5,000" value="5,000">
+          <span class="unit">원/시간/장</span>
+          <div class="field-hint">리스 또는 감가상각 기준</div>
+        </div>
+        <div class="tco-field gpu-field">
+          <label>연간 AI 학습 시간</label>
+          <input type="text" id="comp-gpu-hrs" inputmode="numeric" placeholder="예: 6,000" value="6,000">
+          <span class="unit">시간/년</span>
+        </div>
+        <div class="tco-field gpu-field">
+          <label>스토리지 병목률</label>
+          <input type="text" id="comp-bottleneck" inputmode="decimal" placeholder="예: 15" value="15">
+          <span class="unit">%</span>
+          <div class="field-hint">I/O 대기로 GPU가 유휴 상태인 비율</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 동일 적용 체크 ── -->
+  <label class="tco-same-check">
+    <input type="checkbox" id="same-check" checked>
+    <span>장비 대수 · 사이트 수 · 운영시간 · 전기요금 · PUE · 랙비 · 인건비 · GPU 기본 조건을 동일하게 적용</span>
+  </label>
+
+  <!-- ── HIS 당사 입력 ── -->
+  <div class="tco-input-group group-ours">
+    <div class="tco-section-title title-ours">
+      <span class="section-dot dot-ours"></span>
+      <h2>HIS 효성인포메이션시스템 (당사)</h2>
+      <span class="section-sub">AI Ready Storage</span>
+    </div>
+    <div class="tco-fields">
+      <div class="tco-field price-field field-full">
+        <label>장비 가격 (대당)</label>
+        <input type="text" id="ours-price" inputmode="numeric" placeholder="예: 650,000,000">
+        <span class="unit">원/대</span>
+      </div>
+      <div class="tco-field" id="field-ours-qty">
+        <label>장비 대수</label>
+        <input type="text" id="ours-qty" inputmode="numeric" placeholder="동일 적용">
+        <span class="unit">대</span>
+      </div>
+      <div class="tco-field" id="field-ours-sites">
+        <label>운영 사이트 수</label>
+        <input type="text" id="ours-sites" inputmode="numeric" placeholder="동일 적용">
+        <span class="unit">개소</span>
+      </div>
+      <div class="tco-field">
+        <label>Raw 용량 (대당)</label>
+        <input type="text" id="ours-raw-tb" inputmode="numeric" placeholder="예: 500">
+        <span class="unit">TB</span>
+      </div>
+      <div class="tco-field">
+        <label>데이터 축소율 (압축+중복제거)</label>
+        <input type="text" id="ours-reduction" inputmode="decimal" placeholder="예: 4.0" value="4.0">
+        <span class="unit">:1</span>
+      </div>
+    </div>
+
+    <div class="tco-sub-group">
+      <div class="sub-title"><span class="tag tag-power">전력</span> <span class="tag tag-cool">냉각</span> 전력 및 냉각 비용</div>
+      <div class="tco-fields">
+        <div class="tco-field">
+          <label>소비전력 (대당)</label>
+          <input type="text" id="ours-kw" inputmode="decimal" placeholder="예: 7">
+          <span class="unit">KW</span>
+        </div>
+        <div class="tco-field" id="field-ours-hrs">
+          <label>연간 운영시간</label>
+          <input type="text" id="ours-hrs" inputmode="numeric" placeholder="동일 적용">
+          <span class="unit">시간/년</span>
+        </div>
+        <div class="tco-field" id="field-ours-rate">
+          <label>전기요금 단가</label>
+          <input type="text" id="ours-rate" inputmode="decimal" placeholder="동일 적용">
+          <span class="unit">원/KWh</span>
+        </div>
+        <div class="tco-field" id="field-ours-pue">
+          <label>PUE (냉각효율)</label>
+          <input type="text" id="ours-pue" inputmode="decimal" placeholder="동일 적용">
+          <span class="unit">배</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tco-sub-group">
+      <div class="sub-title"><span class="tag tag-rack">랙</span> <span class="tag tag-sw">SW</span> <span class="tag tag-maint">유지보수</span> 인프라 비용</div>
+      <div class="tco-fields">
+        <div class="tco-field">
+          <label>랙 점유 U수 (대당)</label>
+          <input type="text" id="ours-rack-u" inputmode="numeric" placeholder="예: 20">
+          <span class="unit">U</span>
+        </div>
+        <div class="tco-field" id="field-ours-rack-cost">
+          <label>U당 월 임대비</label>
+          <input type="text" id="ours-rack-cost" inputmode="numeric" placeholder="동일 적용">
+          <span class="unit">원/U/월</span>
+        </div>
+        <div class="tco-field">
+          <label>연간 SW 라이선스 (TB당)</label>
+          <input type="text" id="ours-sw-tb" inputmode="numeric" placeholder="예: 200,000">
+          <span class="unit">원/TB/년</span>
+        </div>
+        <div class="tco-field">
+          <label>연간 유지보수 비율</label>
+          <input type="text" id="ours-maint-pct" inputmode="decimal" placeholder="예: 10" value="10">
+          <span class="unit">% (장비가 대비)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tco-sub-group">
+      <div class="sub-title"><span class="tag tag-labor">인건비</span> 운영 인력 비용</div>
+      <div class="tco-fields">
+        <div class="tco-field labor-field">
+          <label>장비당 필요 관리인원</label>
+          <input type="text" id="ours-staff" inputmode="decimal" placeholder="예: 0.5">
+          <span class="unit">명/대</span>
+        </div>
+        <div class="tco-field labor-field" id="field-ours-salary">
+          <label>1인당 연간 인건비</label>
+          <input type="text" id="ours-salary" inputmode="numeric" placeholder="동일 적용">
+          <span class="unit">원/년</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tco-sub-group">
+      <div class="sub-title"><span class="tag tag-gpu">GPU</span> AI 워크로드 — 스토리지 병목 비용</div>
+      <div class="tco-fields">
+        <div class="tco-field gpu-field" id="field-ours-gpu-cnt">
+          <label>GPU 카드 수</label>
+          <input type="text" id="ours-gpu-cnt" inputmode="numeric" placeholder="동일 적용">
+          <span class="unit">장</span>
+        </div>
+        <div class="tco-field gpu-field" id="field-ours-gpu-cost">
+          <label>GPU 시간당 비용</label>
+          <input type="text" id="ours-gpu-cost" inputmode="numeric" placeholder="동일 적용">
+          <span class="unit">원/시간/장</span>
+        </div>
+        <div class="tco-field gpu-field" id="field-ours-gpu-hrs">
+          <label>연간 AI 학습 시간</label>
+          <input type="text" id="ours-gpu-hrs" inputmode="numeric" placeholder="동일 적용">
+          <span class="unit">시간/년</span>
+        </div>
+        <div class="tco-field gpu-field">
+          <label>스토리지 병목률</label>
+          <input type="text" id="ours-bottleneck" inputmode="decimal" placeholder="예: 5" value="5">
+          <span class="unit">%</span>
+          <div class="field-hint">HIS 고성능 I/O로 병목 최소화</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 시뮬레이션 기간 ── -->
+  <div class="tco-sim-group">
+    <div class="tco-section-title">
+      <span class="section-dot"></span>
+      <h2>시뮬레이션 기간</h2>
+      <span class="section-sub">몇 년간 비교?</span>
+    </div>
+    <div class="tco-fields">
+      <div class="tco-field field-full">
+        <label>시뮬레이션 기간 (년)</label>
+        <input type="text" id="sim-years" inputmode="numeric" placeholder="예: 5" value="5">
+        <span class="unit">년</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AI API 키 (선택) ── -->
+  <div class="tco-api-group">
+    <div class="api-title">AI 분석 (선택사항)</div>
+    <div class="api-desc">Anthropic API 키를 입력하면 TCO 결과에 대한 AI 기반 전략 인사이트를 받을 수 있습니다. 입력하지 않아도 기본 계산은 정상 동작합니다.</div>
+    <input type="password" id="api-key" placeholder="sk-ant-api03-... (선택 입력)">
+  </div>
+
+  <!-- ── 계산 버튼 ── -->
+  <button class="tco-btn" onclick="tcoCalc()">TCO 비교 분석 실행</button>
+
+  <!-- ── 결과 ── -->
+  <div class="tco-result" id="tco-result">
+
+    <!-- 핵심 결과: 연간 총 TCO 절감 -->
+    <div class="tco-result-card">
+      <div class="tco-result-label" id="r-main-label">연간 총 운영비 절감액</div>
+      <div class="tco-result-value" id="r-total"></div>
+      <div class="tco-result-sub" id="r-formula"></div>
+    </div>
+
+    <!-- N년 TCO 절감 -->
+    <div class="tco-result-card card-purple">
+      <div class="tco-result-label" id="r-sim-label"></div>
+      <div class="tco-result-value" id="r-sim-total"></div>
+      <div class="tco-result-sub" id="r-sim-sub"></div>
+    </div>
+
+    <!-- GPU 유휴비용 절감 -->
+    <div class="tco-result-card card-pink" id="r-gpu-card">
+      <div class="tco-result-label">연간 GPU 유휴비용 절감</div>
+      <div class="tco-result-value" id="r-gpu-save"></div>
+      <div class="tco-result-sub" id="r-gpu-sub"></div>
+    </div>
+
+    <!-- 비용 항목별 비교 표 -->
+    <div class="tco-cost-breakdown">
+      <div class="cb-title" id="r-cb-title">항목별 연간 비용 비교</div>
+      <div class="cb-row cb-header">
+        <div class="cb-label">항목</div>
+        <div class="cb-comp">경쟁사</div>
+        <div class="cb-ours">HIS (당사)</div>
+        <div class="cb-diff">절감/차이</div>
+      </div>
+      <div class="cb-row" id="cb-equip"></div>
+      <div class="cb-row" id="cb-power"></div>
+      <div class="cb-row" id="cb-cool"></div>
+      <div class="cb-row" id="cb-rack"></div>
+      <div class="cb-row" id="cb-sw"></div>
+      <div class="cb-row" id="cb-maint"></div>
+      <div class="cb-row" id="cb-labor"></div>
+      <div class="cb-row" id="cb-gpu"></div>
+      <div class="cb-row cb-total" id="cb-total"></div>
+    </div>
+
+    <!-- 상세 지표 -->
+    <div class="tco-detail">
+      <div class="tco-detail-item">
+        <div class="dt-label">전력비 절감률</div>
+        <div class="dt-value" id="r-power-pct"></div>
+      </div>
+      <div class="tco-detail-item">
+        <div class="dt-label">월간 총 절감액</div>
+        <div class="dt-value" id="r-monthly"></div>
+      </div>
+      <div class="tco-detail-item">
+        <div class="dt-label">KW 절감 (총)</div>
+        <div class="dt-value" id="r-kw-diff"></div>
+      </div>
+      <div class="tco-detail-item">
+        <div class="dt-label">관리인원 절감</div>
+        <div class="dt-value" id="r-staff-diff"></div>
+      </div>
+      <div class="tco-detail-item" id="r-roi-box">
+        <div class="dt-label" id="r-roi-label">투자 회수 기간</div>
+        <div class="dt-value" id="r-roi"></div>
+      </div>
+      <div class="tco-detail-item">
+        <div class="dt-label">유효용량 대비 비용/TB</div>
+        <div class="dt-value" id="r-cost-per-tb"></div>
+      </div>
+    </div>
+
+    <!-- 연간 TCO 비교 그래프 -->
+    <div class="tco-chart">
+      <div class="tco-chart-title" id="r-annual-chart-title">연간 총 운영비 비교</div>
+      <div class="tco-chart-sub">전력 + 냉각 + 랙 + SW + 유지보수 + 인건비 + GPU 유휴비용</div>
+      <div class="tco-bar-group">
+        <div class="tco-bar-label">
+          <span id="bar-comp-name">경쟁사</span>
+          <span id="bar-comp-val"></span>
+        </div>
+        <div class="tco-bar-track">
+          <div class="tco-bar-fill bar-comp" id="bar-comp"></div>
+        </div>
+      </div>
+      <div class="tco-bar-group">
+        <div class="tco-bar-label">
+          <span>HIS (당사)</span>
+          <span id="bar-ours-val"></span>
+        </div>
+        <div class="tco-bar-track">
+          <div class="tco-bar-fill bar-ours" id="bar-ours"></div>
+        </div>
+      </div>
+      <div class="tco-savings-bar">
+        <div class="tco-savings-label" id="r-savings-text"></div>
+      </div>
+
+      <!-- 스택 바 차트 -->
+      <div class="tco-stack-chart">
+        <div class="tco-chart-title" style="font-size:15px; margin-top:24px;">비용 구성 비교</div>
+        <div class="stack-legend">
+          <div class="stack-legend-item"><div class="legend-dot" style="background:#E05555;"></div>전력</div>
+          <div class="stack-legend-item"><div class="legend-dot" style="background:#FF8C00;"></div>냉각</div>
+          <div class="stack-legend-item"><div class="legend-dot" style="background:#64748B;"></div>랙</div>
+          <div class="stack-legend-item"><div class="legend-dot" style="background:#6366F1;"></div>SW</div>
+          <div class="stack-legend-item"><div class="legend-dot" style="background:#8B5CF6;"></div>유지보수</div>
+          <div class="stack-legend-item"><div class="legend-dot" style="background:#2E8B57;"></div>인건비</div>
+          <div class="stack-legend-item"><div class="legend-dot" style="background:#EC4899;"></div>GPU유휴</div>
+        </div>
+        <div class="stack-bar-wrap">
+          <div class="stack-bar-label" id="stack-comp-label">경쟁사</div>
+          <div class="stack-bar" id="stack-comp"></div>
+        </div>
+        <div class="stack-bar-wrap">
+          <div class="stack-bar-label">HIS (당사)</div>
+          <div class="stack-bar" id="stack-ours"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- N년 TCO 그래프 -->
+    <div class="tco-chart">
+      <div class="tco-chart-title" id="r-tco-title">TCO 비교 (장비 구매 + N년 운영)</div>
+      <div class="tco-chart-sub" id="r-tco-sub"></div>
+      <div class="tco-bar-group">
+        <div class="tco-bar-label">
+          <span id="bar-tco-comp-name">경쟁사 TCO</span>
+          <span id="bar-tco-comp-val"></span>
+        </div>
+        <div class="tco-bar-track">
+          <div class="tco-bar-fill bar-comp" id="bar-tco-comp"></div>
+        </div>
+      </div>
+      <div class="tco-bar-group">
+        <div class="tco-bar-label">
+          <span>HIS TCO</span>
+          <span id="bar-tco-ours-val"></span>
+        </div>
+        <div class="tco-bar-track">
+          <div class="tco-bar-fill bar-ours" id="bar-tco-ours"></div>
+        </div>
+      </div>
+      <div class="tco-savings-bar">
+        <div class="tco-savings-label" id="r-tco-text"></div>
+      </div>
+    </div>
+
+    <!-- 연도별 시뮬레이션 표 -->
+    <div class="tco-chart">
+      <div class="tco-chart-title" id="r-table-title">연도별 누적 TCO 시뮬레이션</div>
+      <div class="tco-chart-sub">장비 구매비 + 전력 + 냉각 + 랙 + SW + 유지보수 + 인건비 + GPU유휴 누적</div>
+      <div class="tco-sim-table-wrap">
+        <table class="tco-sim-table" id="r-sim-table">
+          <thead>
+            <tr>
+              <th>연차</th>
+              <th>경쟁사 누적</th>
+              <th>HIS 누적</th>
+              <th>누적 절감</th>
+              <th>순이익</th>
+            </tr>
+          </thead>
+          <tbody id="r-sim-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 요약 -->
+    <div class="tco-summary">
+      <p id="r-summary"></p>
+    </div>
+
+    <!-- AI 분석 버튼 & 결과 -->
+    <button class="tco-ai-btn" id="ai-btn" onclick="runAI()">AI 전략 인사이트 생성</button>
+    <div class="tco-ai-result" id="ai-result">
+      <div class="ai-title">AI 전략 인사이트</div>
+      <div class="ai-body" id="ai-body"></div>
+    </div>
+
+    <button class="tco-reset" onclick="tcoReset()">다시 계산하기</button>
+  </div>
+
+  <!-- 푸터 -->
+  <div class="tco-footer">
+    <p>&copy; HIS 효성인포메이션시스템 · AI Ready Storage TCO Calculator</p>
+    <p style="margin-top:4px; font-size:11px; color:#aaa;">본 계산기는 추정치 기반이며, 실제 비용은 구성 및 환경에 따라 달라질 수 있습니다.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* ── 벤더 선택 ── */
+  window.selectedVendor = 'dell';
+  window.selectVendor = function(v){
+    window.selectedVendor = v;
+    document.querySelectorAll('.vendor-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.getElementById('btn-'+v).classList.add('active');
+    document.getElementById('comp-title').textContent =
+      v === 'dell' ? '경쟁사 — Dell PowerMax' : '경쟁사 — HPE Alletra';
+  };
+
+  /* ── 콤마 자동 포맷 ── */
+  document.querySelectorAll('.tco-calc input[type="text"]').forEach(function(inp){
+    inp.addEventListener('input', function(){
+      var raw = this.value.replace(/[^0-9.]/g, '');
+      if(!raw){ this.value=''; return; }
+      var parts = raw.split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      this.value = parts.length > 1 ? parts[0]+'.'+parts[1] : parts[0];
+    });
+    inp.addEventListener('keydown', function(e){
+      if(e.key==='Enter') tcoCalc();
+    });
+  });
+
+  /* ── 동일 적용 체크 ── */
+  var sameCheck = document.getElementById('same-check');
+  var sameFields = [
+    'field-ours-qty','field-ours-sites','field-ours-hrs','field-ours-rate','field-ours-pue',
+    'field-ours-rack-cost','field-ours-salary',
+    'field-ours-gpu-cnt','field-ours-gpu-cost','field-ours-gpu-hrs'
+  ];
+  var sameInputs = [
+    'ours-qty','ours-sites','ours-hrs','ours-rate','ours-pue',
+    'ours-rack-cost','ours-salary',
+    'ours-gpu-cnt','ours-gpu-cost','ours-gpu-hrs'
+  ];
+
+  function toggleSame(){
+    var checked = sameCheck.checked;
+    sameFields.forEach(function(fid){
+      var el = document.getElementById(fid);
+      if(!el) return;
+      el.style.opacity = checked ? '0.45' : '1';
+      el.style.pointerEvents = checked ? 'none' : 'auto';
+    });
+    if(checked){
+      sameInputs.forEach(function(iid){
+        var el = document.getElementById(iid);
+        if(!el) return;
+        el.value = '';
+        el.placeholder = '동일 적용';
+      });
+    }
+  }
+  sameCheck.addEventListener('change', toggleSame);
+  toggleSame();
+})();
+
+/* ── 유틸 ── */
+function pn(id){
+  return parseFloat(document.getElementById(id).value.replace(/,/g,'')) || 0;
+}
+function formatKRW(n){
+  n = Math.round(n);
+  if(Math.abs(n)>=100000000){
+    var e=Math.floor(Math.abs(n)/100000000), m=Math.floor((Math.abs(n)%100000000)/10000);
+    var s = m>0? e.toLocaleString()+'억 '+m.toLocaleString()+'만원' : e.toLocaleString()+'억원';
+    return n<0 ? '-'+s : s;
+  }
+  if(Math.abs(n)>=10000){ return (n<0?'-':'')+Math.floor(Math.abs(n)/10000).toLocaleString()+'만원'; }
+  return Math.round(n).toLocaleString()+'원';
+}
+function fn(n){ return Math.round(n).toLocaleString(); }
+
+/* ── 비용 행 채우기 ── */
+function fillCBRow(id, label, compVal, oursVal){
+  var diff = compVal - oursVal;
+  var el = document.getElementById(id);
+  var diffClass = diff >= 0 ? 'positive' : 'negative';
+  var diffSign = diff >= 0 ? '-' : '+';
+  el.innerHTML =
+    '<div class="cb-label">'+label+'</div>'+
+    '<div class="cb-comp">'+formatKRW(compVal)+'</div>'+
+    '<div class="cb-ours">'+formatKRW(oursVal)+'</div>'+
+    '<div class="cb-diff '+diffClass+'">'+diffSign+formatKRW(Math.abs(diff))+'</div>';
+}
+
+/* ── 메인 계산 ── */
+function tcoCalc(){
+  var same = document.getElementById('same-check').checked;
+  var vendor = window.selectedVendor;
+  var vendorName = vendor === 'dell' ? 'Dell PowerMax' : 'HPE Alletra';
+
+  /* 경쟁사 값 */
+  var cPrice = pn('comp-price');
+  var cQty = pn('comp-qty');
+  var cSites = pn('comp-sites');
+  var cRawTB = pn('comp-raw-tb');
+  var cReduction = pn('comp-reduction') || 1;
+  var cKW = pn('comp-kw');
+  var cHrs = pn('comp-hrs');
+  var cRate = pn('comp-rate');
+  var cPUE = pn('comp-pue') || 1;
+  var cRackU = pn('comp-rack-u');
+  var cRackCost = pn('comp-rack-cost');
+  var cSwTB = pn('comp-sw-tb');
+  var cMaintPct = pn('comp-maint-pct');
+  var cStaff = pn('comp-staff');
+  var cSalary = pn('comp-salary');
+  var cGpuCnt = pn('comp-gpu-cnt');
+  var cGpuCost = pn('comp-gpu-cost');
+  var cGpuHrs = pn('comp-gpu-hrs');
+  var cBottleneck = pn('comp-bottleneck');
+
+  /* HIS 값 */
+  var oPrice = pn('ours-price');
+  var oQty = same ? cQty : pn('ours-qty');
+  var oSites = same ? cSites : pn('ours-sites');
+  var oRawTB = pn('ours-raw-tb');
+  var oReduction = pn('ours-reduction') || 1;
+  var oKW = pn('ours-kw');
+  var oHrs = same ? cHrs : pn('ours-hrs');
+  var oRate = same ? cRate : pn('ours-rate');
+  var oPUE = same ? cPUE : (pn('ours-pue') || 1);
+  var oRackU = pn('ours-rack-u');
+  var oRackCost = same ? cRackCost : pn('ours-rack-cost');
+  var oSwTB = pn('ours-sw-tb');
+  var oMaintPct = pn('ours-maint-pct');
+  var oStaff = pn('ours-staff');
+  var oSalary = same ? cSalary : pn('ours-salary');
+  var oGpuCnt = same ? cGpuCnt : pn('ours-gpu-cnt');
+  var oGpuCost = same ? cGpuCost : pn('ours-gpu-cost');
+  var oGpuHrs = same ? cGpuHrs : pn('ours-gpu-hrs');
+  var oBottleneck = pn('ours-bottleneck');
+
+  var simYears = Math.max(1, Math.min(30, Math.round(pn('sim-years')))) || 5;
+
+  /* 검증 */
+  if(cPrice<=0 || oPrice<=0){ alert('경쟁사/HIS 장비 가격을 입력해 주세요.'); return; }
+  if(cQty<=0 || cSites<=0){ alert('경쟁사 장비 대수와 사이트 수를 입력해 주세요.'); return; }
+  if(cKW<=0 || oKW<=0){ alert('경쟁사/HIS 소비전력을 입력해 주세요.'); return; }
+
+  /* ── 비용 항목 계산 ── */
+
+  /* 1. 장비 구매비 (1회) */
+  var cEquip = cPrice * cQty * cSites;
+  var oEquip = oPrice * oQty * oSites;
+
+  /* 2. 연간 전력비 */
+  var cPower = cKW * cQty * cHrs * cRate * cSites;
+  var oPower = oKW * oQty * oHrs * oRate * oSites;
+
+  /* 3. 연간 냉각비 */
+  var cCool = cPower * (cPUE - 1);
+  var oCool = oPower * (oPUE - 1);
+
+  /* 4. 연간 랙 비용 */
+  var cRack = cRackU * cQty * cRackCost * 12 * cSites;
+  var oRack = oRackU * oQty * oRackCost * 12 * oSites;
+
+  /* 5. 연간 SW 라이선스 (유효 용량 기준) */
+  var cEffTB = cRawTB * cReduction * cQty * cSites;
+  var oEffTB = oRawTB * oReduction * oQty * oSites;
+  var cSW = cSwTB * cEffTB;
+  var oSW = oSwTB * oEffTB;
+
+  /* 6. 연간 유지보수 */
+  var cMaint = cEquip * (cMaintPct / 100);
+  var oMaint = oEquip * (oMaintPct / 100);
+
+  /* 7. 연간 인건비 */
+  var cTotalStaff = cStaff * cQty * cSites;
+  var oTotalStaff = oStaff * oQty * oSites;
+  var cLabor = cTotalStaff * cSalary;
+  var oLabor = oTotalStaff * oSalary;
+
+  /* 8. 연간 GPU 유휴비용 */
+  var cGpuIdle = cGpuCnt * cGpuCost * cGpuHrs * (cBottleneck / 100);
+  var oGpuIdle = oGpuCnt * oGpuCost * oGpuHrs * (oBottleneck / 100);
+
+  /* 연간 총 운영비 (장비비 제외) */
+  var cAnnualOpex = cPower + cCool + cRack + cSW + cMaint + cLabor + cGpuIdle;
+  var oAnnualOpex = oPower + oCool + oRack + oSW + oMaint + oLabor + oGpuIdle;
+  var annualSaving = cAnnualOpex - oAnnualOpex;
+
+  /* N년 TCO */
+  var cTCO = cEquip + cAnnualOpex * simYears;
+  var oTCO = oEquip + oAnnualOpex * simYears;
+  var tcoSaving = cTCO - oTCO;
+
+  /* 장비 차이 */
+  var equipDiff = oEquip - cEquip;
+
+  /* ROI */
+  var roiText = '';
+  if(equipDiff > 0 && annualSaving > 0){
+    var roiMonths = equipDiff / (annualSaving / 12);
+    if(roiMonths < 1) roiText = Math.round(roiMonths * 30) + '일';
+    else if(roiMonths < 12) roiText = roiMonths.toFixed(1) + '개월';
+    else {
+      var yrs = Math.floor(roiMonths / 12);
+      var mos = Math.round(roiMonths % 12);
+      roiText = yrs + '년' + (mos > 0 ? ' ' + mos + '개월' : '');
+    }
+  } else if(equipDiff <= 0){
+    roiText = '즉시 회수';
+  } else {
+    roiText = '해당 없음';
+  }
+
+  /* ── 결과 채우기 ── */
+
+  /* 메인 카드 */
+  document.getElementById('r-main-label').textContent = vendorName + ' 대비 연간 총 운영비 절감';
+  document.getElementById('r-total').textContent = annualSaving > 0 ? formatKRW(annualSaving) : formatKRW(Math.abs(annualSaving)) + ' 추가';
+  document.getElementById('r-formula').textContent =
+    '전력+냉각 '+formatKRW(cPower+cCool-oPower-oCool)+' + 인건비 '+formatKRW(cLabor-oLabor)+' + 기타 '+formatKRW((cRack+cSW+cMaint+cGpuIdle)-(oRack+oSW+oMaint+oGpuIdle));
+
+  /* N년 TCO */
+  document.getElementById('r-sim-label').textContent = simYears + '년간 총 TCO 절감 효과';
+  document.getElementById('r-sim-total').textContent = tcoSaving > 0 ? formatKRW(tcoSaving) : formatKRW(Math.abs(tcoSaving)) + ' 추가';
+  document.getElementById('r-sim-sub').textContent =
+    '장비차이 '+(equipDiff>0?'+':'')+formatKRW(equipDiff)+' + 운영비절감 '+formatKRW(annualSaving * simYears);
+
+  /* GPU 카드 */
+  var gpuSave = cGpuIdle - oGpuIdle;
+  var gpuCard = document.getElementById('r-gpu-card');
+  if(cGpuCnt > 0 && gpuSave !== 0){
+    gpuCard.style.display = 'block';
+    document.getElementById('r-gpu-save').textContent = gpuSave > 0 ? formatKRW(gpuSave) : formatKRW(Math.abs(gpuSave)) + ' 추가';
+    document.getElementById('r-gpu-sub').textContent =
+      '병목률 '+cBottleneck+'% → '+oBottleneck+'% 개선으로 GPU 활용률 극대화';
+  } else {
+    gpuCard.style.display = 'none';
+  }
+
+  /* 비용 항목 비교 */
+  document.getElementById('r-cb-title').textContent = vendorName + ' vs HIS 항목별 연간 비용 비교';
+  fillCBRow('cb-equip', '장비 구매 (1회)', cEquip, oEquip);
+  fillCBRow('cb-power', '전력비 (연간)', cPower, oPower);
+  fillCBRow('cb-cool', '냉각비 (연간)', cCool, oCool);
+  fillCBRow('cb-rack', '랙 비용 (연간)', cRack, oRack);
+  fillCBRow('cb-sw', 'SW 라이선스 (연간)', cSW, oSW);
+  fillCBRow('cb-maint', '유지보수 (연간)', cMaint, oMaint);
+  fillCBRow('cb-labor', '인건비 (연간)', cLabor, oLabor);
+  fillCBRow('cb-gpu', 'GPU 유휴비용 (연간)', cGpuIdle, oGpuIdle);
+
+  var totalEl = document.getElementById('cb-total');
+  var annDiffClass = annualSaving >= 0 ? 'positive' : 'negative';
+  totalEl.innerHTML =
+    '<div class="cb-label" style="font-size:14px;">연간 운영비 합계</div>'+
+    '<div class="cb-comp" style="font-size:14px;">'+formatKRW(cAnnualOpex)+'</div>'+
+    '<div class="cb-ours" style="font-size:14px;">'+formatKRW(oAnnualOpex)+'</div>'+
+    '<div class="cb-diff '+annDiffClass+'" style="font-size:14px;">-'+formatKRW(Math.abs(annualSaving))+'</div>';
+
+  /* 상세 */
+  var powerPct = cPower > 0 ? (((cPower-oPower)/cPower)*100).toFixed(1) : '0';
+  document.getElementById('r-power-pct').textContent = powerPct + '%';
+  document.getElementById('r-monthly').textContent = formatKRW(annualSaving / 12);
+
+  var cTotalKW = cKW * cQty * cSites;
+  var oTotalKW = oKW * oQty * oSites;
+  document.getElementById('r-kw-diff').textContent = (cTotalKW-oTotalKW > 0 ? '-' : '+') + fn(Math.abs(cTotalKW-oTotalKW)) + ' KW';
+  document.getElementById('r-staff-diff').textContent =
+    (cTotalStaff-oTotalStaff >= 0 ? '-' : '+') + (Math.abs(cTotalStaff-oTotalStaff) % 1 === 0 ? fn(Math.abs(cTotalStaff-oTotalStaff)) : Math.abs(cTotalStaff-oTotalStaff).toFixed(1)) + '명';
+  document.getElementById('r-roi').textContent = roiText;
+
+  var roiBox = document.getElementById('r-roi-box');
+  if(equipDiff > 0){
+    roiBox.className = 'tco-detail-item dt-warn';
+    document.getElementById('r-roi-label').textContent = '투자 회수 기간';
+  } else {
+    roiBox.className = 'tco-detail-item dt-highlight';
+    document.getElementById('r-roi-label').textContent = '투자 회수';
+  }
+
+  /* 유효용량 대비 비용/TB */
+  var cCostPerTB = cEffTB > 0 ? cTCO / cEffTB : 0;
+  var oCostPerTB = oEffTB > 0 ? oTCO / oEffTB : 0;
+  document.getElementById('r-cost-per-tb').textContent =
+    (oCostPerTB > 0 ? formatKRW(oCostPerTB) + '/TB' : 'N/A');
+
+  /* 연간 운영비 바 그래프 */
+  document.getElementById('r-annual-chart-title').textContent = vendorName + ' vs HIS 연간 총 운영비 비교';
+  document.getElementById('bar-comp-name').textContent = vendorName;
+  document.getElementById('bar-comp-val').textContent = formatKRW(cAnnualOpex);
+  document.getElementById('bar-ours-val').textContent = formatKRW(oAnnualOpex);
+  var barComp = document.getElementById('bar-comp');
+  var barOurs = document.getElementById('bar-ours');
+  barComp.style.width='0'; barOurs.style.width='0';
+
+  /* TCO 그래프 */
+  document.getElementById('r-tco-title').textContent = 'TCO 비교 (장비 + '+simYears+'년 운영비)';
+  document.getElementById('r-tco-sub').textContent = '장비 구매비 + '+simYears+'년 누적 운영비 합산';
+  document.getElementById('bar-tco-comp-name').textContent = vendorName + ' TCO';
+  document.getElementById('bar-tco-comp-val').textContent = formatKRW(cTCO);
+  document.getElementById('bar-tco-ours-val').textContent = formatKRW(oTCO);
+  var barTcoComp = document.getElementById('bar-tco-comp');
+  var barTcoOurs = document.getElementById('bar-tco-ours');
+  barTcoComp.style.width='0'; barTcoOurs.style.width='0';
+
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      var annualMax = Math.max(cAnnualOpex, oAnnualOpex, 1);
+      barComp.style.width = ((cAnnualOpex/annualMax)*100).toFixed(1)+'%';
+      barOurs.style.width = ((oAnnualOpex/annualMax)*100).toFixed(1)+'%';
+
+      var tcoMax = Math.max(cTCO, oTCO, 1);
+      barTcoComp.style.width = ((cTCO/tcoMax)*100).toFixed(1)+'%';
+      barTcoOurs.style.width = ((oTCO/tcoMax)*100).toFixed(1)+'%';
+
+      /* 스택 바 */
+      var compCosts = [cPower, cCool, cRack, cSW, cMaint, cLabor, cGpuIdle];
+      var oursCosts = [oPower, oCool, oRack, oSW, oMaint, oLabor, oGpuIdle];
+      var colors = ['#E05555','#FF8C00','#64748B','#6366F1','#8B5CF6','#2E8B57','#EC4899'];
+      var labels = ['전력','냉각','랙','SW','유지','인건비','GPU'];
+
+      function buildStack(containerId, costs){
+        var total = costs.reduce(function(a,b){return a+b;},0) || 1;
+        var container = document.getElementById(containerId);
+        container.innerHTML = '';
+        costs.forEach(function(c,i){
+          var pct = (c/total*100);
+          if(pct < 0.5) return;
+          var seg = document.createElement('div');
+          seg.className = 'seg';
+          seg.style.background = colors[i];
+          seg.style.width = pct.toFixed(1)+'%';
+          if(pct > 8) seg.textContent = labels[i]+' '+Math.round(pct)+'%';
+          seg.title = labels[i] + ': ' + formatKRW(c) + ' (' + pct.toFixed(1) + '%)';
+          container.appendChild(seg);
+        });
+      }
+      buildStack('stack-comp', compCosts);
+      buildStack('stack-ours', oursCosts);
+    });
+  });
+
+  document.getElementById('stack-comp-label').textContent = vendorName;
+
+  if(annualSaving > 0){
+    var savPct = cAnnualOpex > 0 ? ((annualSaving/cAnnualOpex)*100).toFixed(1) : '0';
+    document.getElementById('r-savings-text').textContent =
+      '▼ '+savPct+'% 절감 — 연간 '+formatKRW(annualSaving)+' 운영비 절감';
+  } else {
+    document.getElementById('r-savings-text').textContent = '운영비 차이 없음';
+  }
+
+  var tcoEl = document.getElementById('r-tco-text');
+  if(tcoSaving > 0){
+    tcoEl.textContent = '▼ TCO '+((tcoSaving/cTCO)*100).toFixed(1)+'% 절감 — '+simYears+'년간 '+formatKRW(tcoSaving)+' 절약';
+    tcoEl.style.color = '#228B22';
+  } else {
+    tcoEl.textContent = '△ TCO '+formatKRW(Math.abs(tcoSaving))+' 추가';
+    tcoEl.style.color = 'var(--gold)';
+  }
+
+  /* ── 연도별 시뮬레이션 ── */
+  document.getElementById('r-table-title').textContent = simYears+'년간 연도별 누적 TCO 시뮬레이션';
+  var tbody = document.getElementById('r-sim-tbody');
+  tbody.innerHTML = '';
+  var bepFound = false;
+
+  for(var y = 0; y <= simYears; y++){
+    var cCum = cEquip + cAnnualOpex * y;
+    var oCum = oEquip + oAnnualOpex * y;
+    var cumSaving = cCum - oCum;
+    var cumNet = annualSaving * y - Math.max(0, equipDiff);
+
+    var tr = document.createElement('tr');
+    var isBep = false;
+    if(!bepFound && equipDiff > 0 && y > 0 && cumNet >= 0){
+      bepFound = true; isBep = true;
+      tr.className = 'row-bep';
+    }
+
+    var yearLabel = y === 0 ? '도입 시점' : y + '년차';
+    var netClass = cumNet >= 0 ? 'td-positive' : 'td-negative';
+    var netPrefix = cumNet >= 0 ? '+' : '-';
+
+    tr.innerHTML =
+      '<td>'+yearLabel+'</td>'+
+      '<td>'+formatKRW(cCum)+'</td>'+
+      '<td>'+formatKRW(oCum)+'</td>'+
+      '<td>'+(cumSaving>=0?'+':'-')+formatKRW(Math.abs(cumSaving))+'</td>'+
+      '<td class="'+netClass+'">'+netPrefix+formatKRW(Math.abs(cumNet))+
+        (isBep ? ' <span class="td-bep-tag">BEP</span>' : '')+
+      '</td>';
+    tbody.appendChild(tr);
+  }
+
+  if(equipDiff <= 0) bepFound = true;
+
+  /* 요약 */
+  var parts = [];
+  parts.push('HIS AI Ready Storage 도입 시 '+vendorName+' 대비 소비전력 <strong>'+fn(cTotalKW-oTotalKW)+' KW 절감</strong>으로, 연간 전력+냉각비 <strong>'+formatKRW(cPower+cCool-oPower-oCool)+'</strong> 절감됩니다.');
+
+  if(cLabor - oLabor > 0){
+    parts.push('운영 인력 <strong class="s-green">'+((cTotalStaff-oTotalStaff)%1===0?fn(cTotalStaff-oTotalStaff):(cTotalStaff-oTotalStaff).toFixed(1))+'명 절감</strong>으로 연간 인건비 <strong class="s-green">'+formatKRW(cLabor-oLabor)+'</strong> 절약됩니다.');
+  }
+
+  if(cGpuCnt > 0 && gpuSave > 0){
+    parts.push('스토리지 병목률 개선('+cBottleneck+'% → '+oBottleneck+'%)으로 <strong class="s-pink">GPU 유휴비용 연간 '+formatKRW(gpuSave)+'</strong> 절감, AI 학습 효율이 향상됩니다.');
+  }
+
+  parts.push('총 연간 운영비 <strong>'+formatKRW(annualSaving)+'</strong> 절감, <strong class="s-purple">'+simYears+'년간 TCO '+formatKRW(tcoSaving > 0 ? tcoSaving : 0)+'</strong> 절감 효과가 발생합니다.');
+
+  if(equipDiff > 0){
+    parts.push('장비 투자비는 '+formatKRW(equipDiff)+' 높지만, 운영비 절감으로 <strong class="s-green">약 '+roiText+'</strong> 후 투자금 회수가 가능합니다.');
+  } else if(equipDiff < 0){
+    parts.push('장비 가격도 <strong class="s-green">'+formatKRW(Math.abs(equipDiff))+' 저렴</strong>하여 도입 시점부터 즉시 비용 절감됩니다.');
+  }
+
+  document.getElementById('r-summary').innerHTML = parts.join(' ');
+
+  /* 결과 표시 */
+  var resultEl = document.getElementById('tco-result');
+  resultEl.style.display = 'block';
+  resultEl.scrollIntoView({behavior:'smooth', block:'start'});
+
+  /* AI 버튼 표시 */
+  var apiKey = document.getElementById('api-key').value.trim();
+  var aiBtn = document.getElementById('ai-btn');
+  if(apiKey.length > 10){
+    aiBtn.style.display = 'block';
+  } else {
+    aiBtn.style.display = 'none';
+  }
+
+  /* 데이터 저장 (AI 분석용) */
+  window._tcoData = {
+    vendor: vendorName,
+    simYears: simYears,
+    comp: { equip: cEquip, power: cPower, cool: cCool, rack: cRack, sw: cSW, maint: cMaint, labor: cLabor, gpuIdle: cGpuIdle, totalOpex: cAnnualOpex, tco: cTCO, qty: cQty, sites: cSites, kwTotal: cTotalKW, staff: cTotalStaff, effTB: cEffTB, bottleneck: cBottleneck },
+    ours: { equip: oEquip, power: oPower, cool: oCool, rack: oRack, sw: oSW, maint: oMaint, labor: oLabor, gpuIdle: oGpuIdle, totalOpex: oAnnualOpex, tco: oTCO, qty: oQty, sites: oSites, kwTotal: oTotalKW, staff: oTotalStaff, effTB: oEffTB, bottleneck: oBottleneck },
+    savings: { annual: annualSaving, tco: tcoSaving, equipDiff: equipDiff, roi: roiText, gpu: gpuSave }
+  };
+}
+
+/* ── AI 분석 ── */
+async function runAI(){
+  var apiKey = document.getElementById('api-key').value.trim();
+  if(!apiKey){ alert('AI 분석을 사용하려면 Anthropic API 키를 입력해 주세요.'); return; }
+  if(!window._tcoData){ alert('먼저 TCO 계산을 실행해 주세요.'); return; }
+
+  var btn = document.getElementById('ai-btn');
+  var resultDiv = document.getElementById('ai-result');
+  var bodyDiv = document.getElementById('ai-body');
+
+  btn.disabled = true;
+  btn.textContent = 'AI 분석 중...';
+  resultDiv.style.display = 'block';
+  bodyDiv.textContent = '분석 중입니다. 잠시 기다려 주세요...';
+
+  var d = window._tcoData;
+  var prompt = '당신은 HIS 효성인포메이션시스템의 AI Ready Storage 영업 전략 컨설턴트입니다.\n\n'+
+    '다음은 '+d.vendor+' 대비 HIS 스토리지 TCO 비교 분석 결과입니다:\n\n'+
+    '## 비교 결과 요약\n'+
+    '- 경쟁사('+d.vendor+') '+d.simYears+'년 TCO: '+formatKRW(d.comp.tco)+'\n'+
+    '- HIS '+d.simYears+'년 TCO: '+formatKRW(d.ours.tco)+'\n'+
+    '- TCO 절감액: '+formatKRW(d.savings.tco)+'\n'+
+    '- 연간 운영비 절감: '+formatKRW(d.savings.annual)+'\n'+
+    '- 장비 가격 차이: '+(d.savings.equipDiff > 0 ? 'HIS가 '+formatKRW(d.savings.equipDiff)+' 비싼' : 'HIS가 '+formatKRW(Math.abs(d.savings.equipDiff))+' 저렴')+'\n'+
+    '- 투자 회수 기간: '+d.savings.roi+'\n'+
+    '- GPU 유휴비용 절감: '+formatKRW(d.savings.gpu)+'/년\n'+
+    '- 전력 절감: '+fn(d.comp.kwTotal - d.ours.kwTotal)+' KW\n'+
+    '- 인력 절감: '+(d.comp.staff - d.ours.staff).toFixed(1)+'명\n\n'+
+    '## 항목별 연간 비용\n'+
+    '| 항목 | '+d.vendor+' | HIS |\n'+
+    '|---|---|---|\n'+
+    '| 전력비 | '+formatKRW(d.comp.power)+' | '+formatKRW(d.ours.power)+' |\n'+
+    '| 냉각비 | '+formatKRW(d.comp.cool)+' | '+formatKRW(d.ours.cool)+' |\n'+
+    '| 랙 비용 | '+formatKRW(d.comp.rack)+' | '+formatKRW(d.ours.rack)+' |\n'+
+    '| SW 라이선스 | '+formatKRW(d.comp.sw)+' | '+formatKRW(d.ours.sw)+' |\n'+
+    '| 유지보수 | '+formatKRW(d.comp.maint)+' | '+formatKRW(d.ours.maint)+' |\n'+
+    '| 인건비 | '+formatKRW(d.comp.labor)+' | '+formatKRW(d.ours.labor)+' |\n'+
+    '| GPU 유휴비용 | '+formatKRW(d.comp.gpuIdle)+' | '+formatKRW(d.ours.gpuIdle)+' |\n\n'+
+    '위 데이터를 바탕으로 다음 항목에 대해 한국어로 전략적 인사이트를 제공해 주세요:\n\n'+
+    '1. **핵심 셀링 포인트**: 고객에게 가장 먼저 강조해야 할 3가지 핵심 메시지\n'+
+    '2. **경쟁사 반박 대응**: '+d.vendor+'가 내세울 수 있는 장점과 그에 대한 대응 전략\n'+
+    '3. **고객 유형별 접근**: CIO/CFO/인프라팀 각각에게 어필할 포인트\n'+
+    '4. **AI 시대 스토리지 전략**: GPU 활용률, 데이터 파이프라인 관점에서의 차별점\n'+
+    '5. **제안 멘트 예시**: 실제 고객 미팅에서 사용할 수 있는 2-3문장 엘리베이터 피치\n\n'+
+    '간결하되 실전에서 바로 활용할 수 있도록 작성해 주세요.';
+
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2048,
+        messages: [{role:'user', content: prompt}]
+      })
+    });
+
+    if(!response.ok){
+      var errData = await response.json().catch(function(){ return {}; });
+      throw new Error(errData.error?.message || 'API 요청 실패 ('+response.status+')');
+    }
+
+    var data = await response.json();
+    var text = data.content && data.content[0] ? data.content[0].text : '응답을 받지 못했습니다.';
+    bodyDiv.textContent = text;
+  } catch(err){
+    bodyDiv.textContent = 'AI 분석 오류: ' + err.message + '\n\nAPI 키를 확인하거나, 잠시 후 다시 시도해 주세요.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'AI 전략 인사이트 다시 생성';
+  }
+}
+
+/* ── 리셋 ── */
+function tcoReset(){
+  document.querySelectorAll('.tco-calc input[type="text"]').forEach(function(i){
+    if(i.id === 'sim-years'){ i.value = '5'; return; }
+    if(i.id === 'comp-reduction'){ i.value = '3.0'; return; }
+    if(i.id === 'ours-reduction'){ i.value = '4.0'; return; }
+    if(i.id === 'comp-hrs' || i.id === 'ours-hrs'){ i.value = '8,760'; return; }
+    if(i.id === 'comp-rate' || i.id === 'ours-rate'){ i.value = '120'; return; }
+    if(i.id === 'comp-pue' || i.id === 'ours-pue'){ i.value = '1.6'; return; }
+    if(i.id === 'comp-rack-cost' || i.id === 'ours-rack-cost'){ i.value = '50,000'; return; }
+    if(i.id === 'comp-maint-pct'){ i.value = '12'; return; }
+    if(i.id === 'ours-maint-pct'){ i.value = '10'; return; }
+    if(i.id === 'comp-salary' || i.id === 'ours-salary'){ i.value = '60,000,000'; return; }
+    if(i.id === 'comp-gpu-cost' || i.id === 'ours-gpu-cost'){ i.value = '5,000'; return; }
+    if(i.id === 'comp-gpu-hrs' || i.id === 'ours-gpu-hrs'){ i.value = '6,000'; return; }
+    if(i.id === 'comp-bottleneck'){ i.value = '15'; return; }
+    if(i.id === 'ours-bottleneck'){ i.value = '5'; return; }
+    i.value = '';
+  });
+  document.getElementById('same-check').checked = true;
+  document.getElementById('same-check').dispatchEvent(new Event('change'));
+  document.getElementById('tco-result').style.display = 'none';
+  document.getElementById('ai-result').style.display = 'none';
+  document.getElementById('ai-btn').style.display = 'none';
+  document.querySelector('.tco-header').scrollIntoView({behavior:'smooth'});
+}
+</script>
+
+</body>
+</html>
