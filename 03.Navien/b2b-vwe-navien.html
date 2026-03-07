@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>경동나비엔 B2B VWE 계산기</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --navien-blue: #0066CC;
+  --navien-light: #00A5E5;
+  --navien-dark: #003D7A;
+  --bg-main: #F5F8FC;
+  --bg-white: #FFFFFF;
+  --accent-orange: #FF6B00;
+  --accent-green: #00B67A;
+  --competitor-gray: #8C8C8C;
+  --text-primary: #1A1A2E;
+  --text-secondary: #5A6070;
+  --text-light: #8A90A0;
+  --border: #E2E8F0;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
+body {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.calculator-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+/* ─── Header ─── */
+.calc-header {
+  background: linear-gradient(135deg, var(--navien-blue) 0%, var(--navien-dark) 100%);
+  border-radius: var(--radius-lg);
+  padding: 36px 40px;
+  margin-bottom: 28px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.calc-header::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 300px;
+  height: 300px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%;
+}
+.calc-header h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.5px; }
+.calc-header .subtitle { font-size: 14px; opacity: 0.8; font-weight: 400; }
+.header-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+/* ─── Section Card ─── */
+.section-card {
+  background: var(--bg-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  padding: 28px 32px;
+  margin-bottom: 20px;
+}
+.section-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title .icon {
+  width: 28px; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.icon-blue { background: #E8F4FD; color: var(--navien-blue); }
+.icon-green { background: #E6F9F1; color: var(--accent-green); }
+.icon-orange { background: #FFF3E8; color: var(--accent-orange); }
+.icon-purple { background: #F3E8FF; color: #7C3AED; }
+
+/* ─── Input Section ─── */
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+.input-group.full-width { grid-column: 1 / -1; }
+.input-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+.input-field {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--text-primary);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #FAFBFC;
+}
+.input-field:focus {
+  outline: none;
+  border-color: var(--navien-blue);
+  box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+  background: #fff;
+}
+.input-field::placeholder { color: var(--text-light); }
+
+/* 세대수 슬라이더 */
+.units-input-wrap { display: flex; align-items: center; gap: 16px; }
+.units-input-wrap input[type="number"] {
+  width: 140px; text-align: center; font-size: 22px; font-weight: 700; color: var(--navien-blue); padding: 10px;
+}
+.units-input-wrap input[type="range"] {
+  flex: 1; -webkit-appearance: none; appearance: none; height: 6px;
+  background: linear-gradient(to right, var(--navien-blue) 0%, var(--navien-light) 100%);
+  border-radius: 3px; outline: none;
+}
+.units-input-wrap input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--navien-blue); border: 3px solid #fff; box-shadow: var(--shadow-md); cursor: pointer;
+}
+
+/* TCO 기간 탭 */
+.tco-tabs { display: flex; gap: 8px; }
+.tco-tab {
+  flex: 1; padding: 10px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: #FAFBFC; text-align: center; cursor: pointer; font-size: 14px;
+  font-weight: 500; color: var(--text-secondary); transition: all 0.2s; font-family: inherit;
+}
+.tco-tab:hover { border-color: var(--navien-light); color: var(--navien-blue); }
+.tco-tab.active { background: var(--navien-blue); color: #fff; border-color: var(--navien-blue); font-weight: 600; }
+
+/* 솔루션 체크박스 */
+.solution-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.solution-check {
+  display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  cursor: pointer; transition: all 0.2s; background: #FAFBFC;
+}
+.solution-check:hover { border-color: var(--navien-light); }
+.solution-check.checked { border-color: var(--navien-blue); background: #F0F7FF; }
+.solution-check input[type="checkbox"] { display: none; }
+.check-indicator {
+  width: 20px; height: 20px; border-radius: 4px; border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;
+}
+.solution-check.checked .check-indicator { background: var(--navien-blue); border-color: var(--navien-blue); }
+.check-indicator svg { width: 12px; height: 12px; color: #fff; opacity: 0; transition: opacity 0.2s; }
+.solution-check.checked .check-indicator svg { opacity: 1; }
+.check-text { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+
+/* ─── Spec Panels (솔루션별 상세 입력) ─── */
+.spec-panels { margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+.spec-panel {
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: #FAFBFC; overflow: hidden; transition: border-color 0.2s;
+}
+.spec-panel.open { border-color: var(--navien-blue); }
+.spec-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; cursor: pointer; user-select: none; transition: background 0.2s;
+}
+.spec-panel-header:hover { background: #F0F7FF; }
+.spec-panel-header .panel-title {
+  font-size: 14px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;
+}
+.spec-panel-header .toggle-icon {
+  width: 24px; height: 24px; border-radius: 50%; background: #E8F4FD;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: var(--navien-blue); transition: transform 0.3s; flex-shrink: 0;
+}
+.spec-panel.open .toggle-icon { transform: rotate(180deg); }
+.spec-panel-body { display: none; padding: 0 18px 18px; }
+.spec-panel.open .spec-panel-body { display: block; }
+
+/* Spec 비교 테이블 */
+.spec-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.spec-table thead th {
+  padding: 8px 10px; text-align: center; font-weight: 600; font-size: 12px;
+  color: var(--text-secondary); border-bottom: 2px solid var(--border); background: #F8FAFC;
+}
+.spec-table thead th:first-child { text-align: left; width: 30%; }
+.spec-table thead th.navien-head { color: var(--navien-blue); background: #EFF6FF; }
+.spec-table thead th.comp-head { color: var(--competitor-gray); background: #F5F5F5; }
+.spec-table tbody td { padding: 8px 6px; text-align: center; border-bottom: 1px solid #EEF2F6; vertical-align: middle; }
+.spec-table tbody td:first-child { text-align: left; font-weight: 500; color: var(--text-secondary); font-size: 12px; padding-left: 10px; }
+.spec-table .spec-input {
+  width: 100%; max-width: 120px; padding: 6px 8px; border: 1.5px solid var(--border);
+  border-radius: 6px; font-size: 13px; font-family: inherit; text-align: right;
+  color: var(--text-primary); background: #fff; transition: border-color 0.2s;
+}
+.spec-table .spec-input:focus { outline: none; border-color: var(--navien-blue); box-shadow: 0 0 0 2px rgba(0,102,204,0.1); }
+.spec-table .spec-input.navien-input { color: var(--navien-blue); font-weight: 600; }
+.spec-table .spec-input.comp-input { color: var(--competitor-gray); }
+.spec-table .spec-select {
+  width: 100%; max-width: 120px; padding: 6px 8px; border: 1.5px solid var(--border);
+  border-radius: 6px; font-size: 13px; font-family: inherit; text-align: center;
+  color: var(--text-primary); background: #fff; cursor: pointer;
+}
+.spec-table .spec-select:focus { outline: none; border-color: var(--navien-blue); }
+.spec-table .unit-hint { font-size: 10px; color: var(--text-light); display: block; margin-top: 2px; }
+
+/* 난이도 뱃지 */
+.diff-badge {
+  display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 700;
+}
+.diff-low { background: #E6F9F1; color: #00875A; }
+.diff-mid { background: #FFF8E1; color: #B8860B; }
+.diff-high { background: #FFEAEA; color: #CC0000; }
+
+/* 계산 버튼 */
+.calc-btn-row { display: flex; gap: 12px; margin-top: 8px; }
+.btn-calculate {
+  flex: 1; padding: 14px 28px;
+  background: linear-gradient(135deg, var(--navien-blue), var(--navien-dark));
+  color: #fff; border: none; border-radius: var(--radius-sm); font-size: 16px; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 14px rgba(0,102,204,0.3);
+}
+.btn-calculate:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,102,204,0.4); }
+.btn-calculate:active { transform: translateY(0); }
+.btn-reset {
+  padding: 14px 24px; background: #fff; color: var(--text-secondary);
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 14px;
+  font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.btn-reset:hover { border-color: #ccc; background: #f9f9f9; }
+
+/* ─── Results ─── */
+#results-section { display: none; }
+#results-section.visible { display: block; animation: fadeInUp 0.5s ease; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Summary Cards */
+.summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.summary-card {
+  background: var(--bg-white); border-radius: var(--radius-md); padding: 22px 20px;
+  box-shadow: var(--shadow-sm); border: 1px solid var(--border); text-align: center;
+  position: relative; overflow: hidden;
+}
+.summary-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.summary-card.blue::before { background: var(--navien-blue); }
+.summary-card.green::before { background: var(--accent-green); }
+.summary-card.orange::before { background: var(--accent-orange); }
+.summary-card.sky::before { background: var(--navien-light); }
+.summary-card .card-label { font-size: 12px; font-weight: 600; color: var(--text-light); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.summary-card .card-value { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px; }
+.summary-card.blue .card-value { color: var(--navien-blue); }
+.summary-card.green .card-value { color: var(--accent-green); }
+.summary-card.orange .card-value { color: var(--accent-orange); }
+.summary-card.sky .card-value { color: var(--navien-light); }
+.summary-card .card-unit { font-size: 12px; color: var(--text-light); }
+
+/* TCO Table */
+.tco-table-wrap { overflow-x: auto; }
+.tco-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tco-table thead th { background: var(--bg-main); padding: 12px 16px; text-align: right; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid var(--border); white-space: nowrap; }
+.tco-table thead th:first-child { text-align: left; }
+.tco-table tbody td { padding: 14px 16px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.tco-table tbody td:first-child { text-align: left; font-weight: 500; color: var(--text-primary); }
+.tco-table .navien-col { color: var(--navien-blue); font-weight: 600; }
+.tco-table .comp-col { color: var(--competitor-gray); }
+.tco-table .saving-col { color: var(--accent-orange); font-weight: 700; }
+.tco-table .total-row { background: #F0F7FF; font-weight: 700; font-size: 15px; }
+.tco-table .total-row td { border-bottom: none; }
+.tco-table .total-row .saving-col { color: var(--accent-orange); font-size: 16px; }
+
+/* Charts */
+.charts-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 20px; }
+.chart-box { background: var(--bg-white); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--border); padding: 24px; }
+.chart-box h3 { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; }
+.chart-container { position: relative; width: 100%; }
+.bar-chart-container { height: 300px; }
+.pie-chart-container { height: 300px; }
+
+/* Solution Detail */
+.solution-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.solution-detail-card { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; background: #FAFBFC; }
+.solution-detail-card h4 { font-size: 14px; font-weight: 700; color: var(--navien-blue); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+.detail-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; border-bottom: 1px dashed #eee; }
+.detail-row:last-child { border-bottom: none; }
+.detail-row .label { color: var(--text-secondary); }
+.detail-row .value { font-weight: 600; color: var(--text-primary); }
+.detail-row .value.navien { color: var(--navien-blue); }
+.detail-row .value.saving { color: var(--accent-orange); }
+
+/* Construction Efficiency */
+.efficiency-bars { display: flex; flex-direction: column; gap: 24px; }
+.efficiency-item label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; }
+.bar-compare { display: flex; flex-direction: column; gap: 6px; }
+.bar-row { display: flex; align-items: center; gap: 12px; }
+.bar-label { width: 60px; font-size: 12px; font-weight: 600; text-align: right; flex-shrink: 0; }
+.bar-label.navien { color: var(--navien-blue); }
+.bar-label.comp { color: var(--competitor-gray); }
+.bar-track { flex: 1; height: 28px; background: #F0F0F0; border-radius: 6px; overflow: hidden; position: relative; }
+.bar-fill {
+  height: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 10px; font-size: 12px; font-weight: 700; color: #fff; transition: width 0.8s ease;
+}
+.bar-fill.navien-bar { background: linear-gradient(90deg, var(--navien-blue), var(--navien-light)); }
+.bar-fill.comp-bar { background: var(--competitor-gray); }
+
+/* Difficulty Compare in Results */
+.diff-compare-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.diff-compare-card {
+  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; text-align: center; background: #FAFBFC;
+}
+.diff-compare-card .sol-name { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; }
+.diff-compare-row { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 6px; }
+.diff-compare-row .side-label { font-size: 11px; font-weight: 600; width: 40px; text-align: right; }
+.diff-compare-row .side-label.nav { color: var(--navien-blue); }
+.diff-compare-row .side-label.cmp { color: var(--competitor-gray); }
+
+/* PDF Button */
+.btn-pdf {
+  display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px;
+  background: var(--navien-dark); color: #fff; border: none; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+  transition: all 0.15s; margin-top: 20px;
+}
+.btn-pdf:hover { background: #002D5C; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .summary-cards { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+  .solution-detail-grid { grid-template-columns: 1fr; }
+  .diff-compare-grid { grid-template-columns: 1fr 1fr; }
+  .input-grid { grid-template-columns: 1fr; }
+  .solution-checks { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .calculator-wrap { padding: 12px 12px 40px; }
+  .calc-header { padding: 24px 20px; }
+  .calc-header h1 { font-size: 20px; }
+  .section-card { padding: 20px 16px; }
+  .summary-cards { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .summary-card { padding: 16px 12px; }
+  .summary-card .card-value { font-size: 20px; }
+  .tco-tabs { flex-wrap: wrap; }
+  .units-input-wrap { flex-direction: column; }
+  .units-input-wrap input[type="number"] { width: 100%; }
+  .diff-compare-grid { grid-template-columns: 1fr; }
+  .spec-table .spec-input, .spec-table .spec-select { max-width: 90px; font-size: 12px; }
+}
+
+/* Print */
+@media print {
+  body { background: #fff; }
+  .section-card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+  .btn-calculate, .btn-reset, .btn-pdf, #input-section { display: none; }
+  #results-section { display: block !important; }
+  .calc-header { background: var(--navien-blue) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+
+<div class="calculator-wrap">
+  <!-- Header -->
+  <header class="calc-header">
+    <div class="header-badge">B2B Value Calculator</div>
+    <h1>경동나비엔 통합 솔루션 VWE 계산기</h1>
+    <p class="subtitle">건설사 대상 통합 솔루션 제안 시 TCO(총소유비용) 비교 분석 도구</p>
+  </header>
+
+  <!-- Input Section -->
+  <section class="section-card" id="input-section">
+    <div class="section-title">
+      <span class="icon icon-blue">📋</span>
+      프로젝트 정보 입력
+    </div>
+    <div class="input-grid">
+      <div class="input-group">
+        <label class="input-label">프로젝트명</label>
+        <input type="text" class="input-field" id="projectName" placeholder="예: ○○ 아파트 신축 프로젝트">
+      </div>
+      <div class="input-group">
+        <label class="input-label">건설사명</label>
+        <input type="text" class="input-field" id="clientName" placeholder="예: 현대건설">
+      </div>
+      <div class="input-group full-width">
+        <label class="input-label">총 세대수</label>
+        <div class="units-input-wrap">
+          <input type="number" class="input-field" id="unitCount" min="50" max="10000" step="50" value="500">
+          <input type="range" id="unitSlider" min="50" max="10000" step="50" value="500">
+        </div>
+      </div>
+      <div class="input-group full-width">
+        <label class="input-label">TCO 분석 기간</label>
+        <div class="tco-tabs" id="tcoTabs">
+          <button class="tco-tab" data-years="3">3년</button>
+          <button class="tco-tab active" data-years="5">5년</button>
+          <button class="tco-tab" data-years="10">10년</button>
+        </div>
+      </div>
+      <div class="input-group full-width">
+        <label class="input-label">적용 솔루션 선택</label>
+        <div class="solution-checks" id="solutionChecks">
+          <label class="solution-check checked" data-key="heating">
+            <input type="checkbox" checked>
+            <span class="check-indicator"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="check-text">🔥 난방 및 온수 솔루션</span>
+          </label>
+          <label class="solution-check checked" data-key="aircare">
+            <input type="checkbox" checked>
+            <span class="check-indicator"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="check-text">❄️ 에어 케어 및 냉방 솔루션</span>
+          </label>
+          <label class="solution-check checked" data-key="kitchen">
+            <input type="checkbox" checked>
+            <span class="check-indicator"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="check-text">🍳 나비엔 매직 (주방 가전)</span>
+          </label>
+          <label class="solution-check checked" data-key="smarthome">
+            <input type="checkbox" checked>
+            <span class="check-indicator"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="check-text">🏠 수면 및 스마트홈 솔루션</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Spec Input Section -->
+  <section class="section-card" id="spec-section">
+    <div class="section-title">
+      <span class="icon icon-purple">⚙️</span>
+      솔루션별 상세 스펙 비교 입력
+      <span style="font-size:12px; color:var(--text-light); font-weight:400; margin-left:auto;">클릭하여 펼치기/접기</span>
+    </div>
+    <div class="spec-panels" id="specPanels">
+      <!-- JS에서 동적 생성 -->
+    </div>
+  </section>
+
+  <!-- Calculate Button -->
+  <section class="section-card" style="padding:20px 32px;">
+    <div class="calc-btn-row">
+      <button class="btn-calculate" id="btnCalc">TCO 분석 시작</button>
+      <button class="btn-reset" id="btnReset">초기화</button>
+    </div>
+  </section>
+
+  <!-- Results Section -->
+  <div id="results-section">
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card blue">
+        <div class="card-label">TCO 총 절감액</div>
+        <div class="card-value" id="totalSaving">-</div>
+        <div class="card-unit">만원</div>
+      </div>
+      <div class="summary-card green">
+        <div class="card-label">공사 인력 절감</div>
+        <div class="card-value" id="laborSaving">-</div>
+        <div class="card-unit">% 절감</div>
+      </div>
+      <div class="summary-card orange">
+        <div class="card-label">공사 기간 단축</div>
+        <div class="card-value" id="periodSaving">-</div>
+        <div class="card-unit">일 단축</div>
+      </div>
+      <div class="summary-card sky">
+        <div class="card-label">에너지 효율 향상</div>
+        <div class="card-value" id="energySaving">-</div>
+        <div class="card-unit">% 절감</div>
+      </div>
+    </div>
+
+    <!-- Difficulty Comparison -->
+    <section class="section-card">
+      <div class="section-title">
+        <span class="icon icon-purple">⚙️</span>
+        설치 난이도 비교
+      </div>
+      <div class="diff-compare-grid" id="diffCompareGrid"></div>
+    </section>
+
+    <!-- TCO Table -->
+    <section class="section-card">
+      <div class="section-title">
+        <span class="icon icon-blue">📊</span>
+        TCO 비교 분석표
+        <span id="tcoYearsLabel" style="font-size:13px; color:var(--text-light); font-weight:400; margin-left:auto;">(5년 기준)</span>
+      </div>
+      <div class="tco-table-wrap">
+        <table class="tco-table">
+          <thead>
+            <tr>
+              <th>비용 항목</th>
+              <th>나비엔</th>
+              <th>경쟁사(평균)</th>
+              <th>절감액</th>
+              <th>절감률</th>
+            </tr>
+          </thead>
+          <tbody id="tcoTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+      <div class="chart-box">
+        <h3>항목별 TCO 비교</h3>
+        <div class="chart-container bar-chart-container"><canvas id="barChart"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>절감 구성 비율</h3>
+        <div class="chart-container pie-chart-container"><canvas id="pieChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Solution Detail -->
+    <section class="section-card" style="margin-top:20px;">
+      <div class="section-title">
+        <span class="icon icon-green">📦</span>
+        솔루션별 상세 내역
+      </div>
+      <div class="solution-detail-grid" id="solutionDetailGrid"></div>
+    </section>
+
+    <!-- Construction Efficiency -->
+    <section class="section-card">
+      <div class="section-title">
+        <span class="icon icon-orange">⚡</span>
+        공사 효율성 비교
+      </div>
+      <div class="efficiency-bars" id="efficiencyBars"></div>
+    </section>
+
+    <!-- PDF Button -->
+    <div style="text-align:center;">
+      <button class="btn-pdf" onclick="window.print()">📄 PDF로 저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── 제품 데이터 (기본값) ─── */
+const DEFAULTS = {
+  heating: {
+    name: '난방 및 온수 솔루션', icon: '🔥',
+    navienPrice: 132,  compPrice: 154,       // 세대당 구매가 (만원)
+    navienDiff: 'low',  compDiff: 'mid',      // 설치 난이도 low/mid/high
+    navienEfficiency: 97, compEfficiency: 89,  // 에너지 효율지수 (%)
+    navienPartsCycle: 36, compPartsCycle: 24,  // 소모품 교체주기 (개월)
+    navienPartsCost: 8, compPartsCost: 15,     // 소모품 교체 비용 (만원/회)
+    navienMgmtCost: 2.5, compMgmtCost: 4.2,   // 관리 인건비 (만원/월/세대)
+    navienInstallHours: 2.5, compInstallHours: 4.0,
+    navienInstallLabor: 0.3, compInstallLabor: 0.5,
+    navienEnergyCost: 48, compEnergyCost: 58,  // 월 에너지비 (만원/세대)
+    laborCostPerPerson: 25  // 일당 (만원)
+  },
+  aircare: {
+    name: '에어 케어 및 냉방 솔루션', icon: '❄️',
+    navienPrice: 322, compPrice: 382,
+    navienDiff: 'mid', compDiff: 'high',
+    navienEfficiency: 95, compEfficiency: 87,
+    navienPartsCycle: 24, compPartsCycle: 18,
+    navienPartsCost: 12, compPartsCost: 20,
+    navienMgmtCost: 3.5, compMgmtCost: 5.5,
+    navienInstallHours: 3.0, compInstallHours: 4.5,
+    navienInstallLabor: 0.4, compInstallLabor: 0.6,
+    navienEnergyCost: 36, compEnergyCost: 45,
+    laborCostPerPerson: 25
+  },
+  kitchen: {
+    name: '나비엔 매직 (주방 가전)', icon: '🍳',
+    navienPrice: 175, compPrice: 205,
+    navienDiff: 'low', compDiff: 'mid',
+    navienEfficiency: 93, compEfficiency: 85,
+    navienPartsCycle: 48, compPartsCycle: 36,
+    navienPartsCost: 5, compPartsCost: 10,
+    navienMgmtCost: 1.5, compMgmtCost: 2.8,
+    navienInstallHours: 2.0, compInstallHours: 3.0,
+    navienInstallLabor: 0.2, compInstallLabor: 0.3,
+    navienEnergyCost: 18, compEnergyCost: 22,
+    laborCostPerPerson: 25
+  },
+  smarthome: {
+    name: '수면 및 스마트홈 솔루션', icon: '🏠',
+    navienPrice: 78, compPrice: 96,
+    navienDiff: 'low', compDiff: 'mid',
+    navienEfficiency: 92, compEfficiency: 80,
+    navienPartsCycle: 60, compPartsCycle: 36,
+    navienPartsCost: 3, compPartsCost: 7,
+    navienMgmtCost: 1.0, compMgmtCost: 2.0,
+    navienInstallHours: 1.5, compInstallHours: 2.5,
+    navienInstallLabor: 0.15, compInstallLabor: 0.25,
+    navienEnergyCost: 6, compEnergyCost: 8.5,
+    laborCostPerPerson: 25
+  }
+};
+
+const DIFF_LABELS = { low: '하 (쉬움)', mid: '중', high: '상 (어려움)' };
+const DIFF_CLASS = { low: 'diff-low', mid: 'diff-mid', high: 'diff-high' };
+const DIFF_SHORT = { low: '하', mid: '중', high: '상' };
+
+/* ─── State ─── */
+let state = { units: 500, years: 5, selected: ['heating', 'aircare', 'kitchen', 'smarthome'] };
+let barChartInstance = null;
+let pieChartInstance = null;
+
+/* ─── 스펙 패널 생성 ─── */
+function buildSpecPanels() {
+  const wrap = document.getElementById('specPanels');
+  let html = '';
+  for (const [key, d] of Object.entries(DEFAULTS)) {
+    html += `
+    <div class="spec-panel" data-key="${key}" id="panel-${key}">
+      <div class="spec-panel-header" onclick="togglePanel('${key}')">
+        <span class="panel-title">${d.icon} ${d.name}</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="spec-panel-body">
+        <table class="spec-table">
+          <thead>
+            <tr>
+              <th>항목</th>
+              <th class="navien-head">나비엔 (당사)</th>
+              <th class="comp-head">경쟁사 (평균)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>세대당 구매가<span class="unit-hint">만원</span></td>
+              <td><input type="number" class="spec-input navien-input" id="${key}_navPrice" value="${d.navienPrice}" step="1"></td>
+              <td><input type="number" class="spec-input comp-input" id="${key}_compPrice" value="${d.compPrice}" step="1"></td>
+            </tr>
+            <tr>
+              <td>설치 난이도</td>
+              <td>
+                <select class="spec-select" id="${key}_navDiff">
+                  <option value="low" ${d.navienDiff==='low'?'selected':''}>하 (쉬움)</option>
+                  <option value="mid" ${d.navienDiff==='mid'?'selected':''}>중</option>
+                  <option value="high" ${d.navienDiff==='high'?'selected':''}>상 (어려움)</option>
+                </select>
+              </td>
+              <td>
+                <select class="spec-select" id="${key}_compDiff">
+                  <option value="low" ${d.compDiff==='low'?'selected':''}>하 (쉬움)</option>
+                  <option value="mid" ${d.compDiff==='mid'?'selected':''}>중</option>
+                  <option value="high" ${d.compDiff==='high'?'selected':''}>상 (어려움)</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>에너지 효율지수<span class="unit-hint">%</span></td>
+              <td><input type="number" class="spec-input navien-input" id="${key}_navEff" value="${d.navienEfficiency}" min="0" max="100"></td>
+              <td><input type="number" class="spec-input comp-input" id="${key}_compEff" value="${d.compEfficiency}" min="0" max="100"></td>
+            </tr>
+            <tr>
+              <td>소모품 교체주기<span class="unit-hint">개월</span></td>
+              <td><input type="number" class="spec-input navien-input" id="${key}_navPartsCycle" value="${d.navienPartsCycle}" min="1"></td>
+              <td><input type="number" class="spec-input comp-input" id="${key}_compPartsCycle" value="${d.compPartsCycle}" min="1"></td>
+            </tr>
+            <tr>
+              <td>소모품 교체 비용<span class="unit-hint">만원/회</span></td>
+              <td><input type="number" class="spec-input navien-input" id="${key}_navPartsCost" value="${d.navienPartsCost}" step="0.1"></td>
+              <td><input type="number" class="spec-input comp-input" id="${key}_compPartsCost" value="${d.compPartsCost}" step="0.1"></td>
+            </tr>
+            <tr>
+              <td>관리 인건비<span class="unit-hint">만원/월/세대</span></td>
+              <td><input type="number" class="spec-input navien-input" id="${key}_navMgmt" value="${d.navienMgmtCost}" step="0.1"></td>
+              <td><input type="number" class="spec-input comp-input" id="${key}_compMgmt" value="${d.compMgmtCost}" step="0.1"></td>
+            </tr>
+            <tr>
+              <td>월 에너지비<span class="unit-hint">만원/세대</span></td>
+              <td><input type="number" class="spec-input navien-input" id="${key}_navEnergy" value="${d.navienEnergyCost}" step="0.1"></td>
+              <td><input type="number" class="spec-input comp-input" id="${key}_compEnergy" value="${d.compEnergyCost}" step="0.1"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+  wrap.innerHTML = html;
+}
+
+function togglePanel(key) {
+  document.getElementById('panel-' + key).classList.toggle('open');
+}
+
+function getSpec(key) {
+  const v = id => parseFloat(document.getElementById(id)?.value) || 0;
+  const s = id => document.getElementById(id)?.value || 'mid';
+  const d = DEFAULTS[key];
+  return {
+    name: d.name, icon: d.icon,
+    navienPrice: v(key+'_navPrice'),
+    compPrice: v(key+'_compPrice'),
+    navienDiff: s(key+'_navDiff'),
+    compDiff: s(key+'_compDiff'),
+    navienEfficiency: v(key+'_navEff'),
+    compEfficiency: v(key+'_compEff'),
+    navienPartsCycle: v(key+'_navPartsCycle'),
+    compPartsCycle: v(key+'_compPartsCycle'),
+    navienPartsCost: v(key+'_navPartsCost'),
+    compPartsCost: v(key+'_compPartsCost'),
+    navienMgmtCost: v(key+'_navMgmt'),
+    compMgmtCost: v(key+'_compMgmt'),
+    navienEnergyCost: v(key+'_navEnergy'),
+    compEnergyCost: v(key+'_compEnergy'),
+    navienInstallHours: d.navienInstallHours,
+    compInstallHours: d.compInstallHours,
+    navienInstallLabor: d.navienInstallLabor,
+    compInstallLabor: d.compInstallLabor,
+    laborCostPerPerson: d.laborCostPerPerson
+  };
+}
+
+/* ─── DOM ─── */
+const $unitCount = document.getElementById('unitCount');
+const $unitSlider = document.getElementById('unitSlider');
+const $tcoTabs = document.getElementById('tcoTabs');
+const $solutionChecks = document.getElementById('solutionChecks');
+const $btnCalc = document.getElementById('btnCalc');
+const $btnReset = document.getElementById('btnReset');
+const $results = document.getElementById('results-section');
+
+/* ─── Events ─── */
+$unitCount.addEventListener('input', () => {
+  let v = parseInt($unitCount.value) || 50;
+  v = Math.max(50, Math.min(10000, v));
+  state.units = v;
+  $unitSlider.value = v;
+});
+$unitSlider.addEventListener('input', () => {
+  state.units = parseInt($unitSlider.value);
+  $unitCount.value = state.units;
+});
+
+$tcoTabs.addEventListener('click', e => {
+  const tab = e.target.closest('.tco-tab');
+  if (!tab) return;
+  $tcoTabs.querySelectorAll('.tco-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  state.years = parseInt(tab.dataset.years);
+});
+
+$solutionChecks.addEventListener('click', e => {
+  const check = e.target.closest('.solution-check');
+  if (!check) return;
+  const key = check.dataset.key;
+  const cb = check.querySelector('input[type="checkbox"]');
+  cb.checked = !cb.checked;
+  check.classList.toggle('checked', cb.checked);
+  if (cb.checked) {
+    if (!state.selected.includes(key)) state.selected.push(key);
+  } else {
+    state.selected = state.selected.filter(k => k !== key);
+  }
+});
+
+$btnCalc.addEventListener('click', calculate);
+$btnReset.addEventListener('click', resetAll);
+
+function resetAll() {
+  state = { units: 500, years: 5, selected: ['heating', 'aircare', 'kitchen', 'smarthome'] };
+  $unitCount.value = 500;
+  $unitSlider.value = 500;
+  document.getElementById('projectName').value = '';
+  document.getElementById('clientName').value = '';
+  $tcoTabs.querySelectorAll('.tco-tab').forEach(t => t.classList.remove('active'));
+  $tcoTabs.querySelector('[data-years="5"]').classList.add('active');
+  $solutionChecks.querySelectorAll('.solution-check').forEach(c => {
+    c.classList.add('checked');
+    c.querySelector('input').checked = true;
+  });
+  // 스펙 패널 기본값 복원
+  for (const [key, d] of Object.entries(DEFAULTS)) {
+    const el = id => document.getElementById(id);
+    if (el(key+'_navPrice')) el(key+'_navPrice').value = d.navienPrice;
+    if (el(key+'_compPrice')) el(key+'_compPrice').value = d.compPrice;
+    if (el(key+'_navDiff')) el(key+'_navDiff').value = d.navienDiff;
+    if (el(key+'_compDiff')) el(key+'_compDiff').value = d.compDiff;
+    if (el(key+'_navEff')) el(key+'_navEff').value = d.navienEfficiency;
+    if (el(key+'_compEff')) el(key+'_compEff').value = d.compEfficiency;
+    if (el(key+'_navPartsCycle')) el(key+'_navPartsCycle').value = d.navienPartsCycle;
+    if (el(key+'_compPartsCycle')) el(key+'_compPartsCycle').value = d.compPartsCycle;
+    if (el(key+'_navPartsCost')) el(key+'_navPartsCost').value = d.navienPartsCost;
+    if (el(key+'_compPartsCost')) el(key+'_compPartsCost').value = d.compPartsCost;
+    if (el(key+'_navMgmt')) el(key+'_navMgmt').value = d.navienMgmtCost;
+    if (el(key+'_compMgmt')) el(key+'_compMgmt').value = d.compMgmtCost;
+    if (el(key+'_navEnergy')) el(key+'_navEnergy').value = d.navienEnergyCost;
+    if (el(key+'_compEnergy')) el(key+'_compEnergy').value = d.compEnergyCost;
+    document.getElementById('panel-'+key).classList.remove('open');
+  }
+  $results.classList.remove('visible');
+}
+
+/* ─── 계산 ─── */
+function calculate() {
+  if (state.selected.length === 0) { alert('최소 1개 이상의 솔루션을 선택해주세요.'); return; }
+
+  const units = state.units;
+  const years = state.years;
+  const sel = state.selected;
+
+  let totalEquipNav = 0, totalEquipComp = 0;
+  let totalInstallNav = 0, totalInstallComp = 0;
+  let totalEnergyNav = 0, totalEnergyComp = 0;
+  let totalPartsNav = 0, totalPartsComp = 0;
+  let totalMgmtNav = 0, totalMgmtComp = 0;
+  let totalLaborNav = 0, totalLaborComp = 0;
+  let totalHoursNav = 0, totalHoursComp = 0;
+
+  const specData = {};
+
+  sel.forEach(key => {
+    const sp = getSpec(key);
+    specData[key] = sp;
+
+    // 장비 구매비 (만원 → 원 계산, 최종 표시는 만원)
+    totalEquipNav += sp.navienPrice * units;
+    totalEquipComp += sp.compPrice * units;
+
+    // 설치 공사비
+    totalInstallNav += sp.navienInstallLabor * units * sp.laborCostPerPerson * (sp.navienInstallHours / 8);
+    totalInstallComp += sp.compInstallLabor * units * sp.laborCostPerPerson * (sp.compInstallHours / 8);
+
+    // 에너지비 (월 → 연 → N년, 만원)
+    totalEnergyNav += sp.navienEnergyCost * 12 * years * units;
+    totalEnergyComp += sp.compEnergyCost * 12 * years * units;
+
+    // 소모품 비용 (교체 횟수 x 비용, 만원)
+    const navPartsCount = sp.navienPartsCycle > 0 ? Math.floor((years * 12) / sp.navienPartsCycle) : 0;
+    const compPartsCount = sp.compPartsCycle > 0 ? Math.floor((years * 12) / sp.compPartsCycle) : 0;
+    totalPartsNav += navPartsCount * sp.navienPartsCost * units;
+    totalPartsComp += compPartsCount * sp.compPartsCost * units;
+
+    // 관리 인건비 (월 → N년, 만원)
+    totalMgmtNav += sp.navienMgmtCost * 12 * years * units;
+    totalMgmtComp += sp.compMgmtCost * 12 * years * units;
+
+    totalLaborNav += sp.navienInstallLabor * units;
+    totalLaborComp += sp.compInstallLabor * units;
+    totalHoursNav += sp.navienInstallHours * units;
+    totalHoursComp += sp.compInstallHours * units;
+  });
+
+  // 모든 값이 만원 단위
+  const tcoNav = totalEquipNav + totalInstallNav + totalEnergyNav + totalPartsNav + totalMgmtNav;
+  const tcoComp = totalEquipComp + totalInstallComp + totalEnergyComp + totalPartsComp + totalMgmtComp;
+  const totalSaving = tcoComp - tcoNav;
+
+  const laborSavingPct = totalLaborComp > 0 ? ((totalLaborComp - totalLaborNav) / totalLaborComp * 100).toFixed(0) : '0';
+  const periodSavingDays = Math.round((totalHoursComp - totalHoursNav) / 8);
+
+  // 에너지 효율 평균
+  let avgNavEff = 0, avgCompEff = 0;
+  sel.forEach(key => { avgNavEff += specData[key].navienEfficiency; avgCompEff += specData[key].compEfficiency; });
+  avgNavEff /= sel.length; avgCompEff /= sel.length;
+  const energySavingPct = avgCompEff > 0 ? ((avgNavEff - avgCompEff) / avgCompEff * 100).toFixed(0) : '0';
+
+  // 요약 카드
+  document.getElementById('totalSaving').textContent = fmtMan(totalSaving);
+  document.getElementById('laborSaving').textContent = laborSavingPct;
+  document.getElementById('periodSaving').textContent = formatNumber(periodSavingDays);
+  document.getElementById('energySaving').textContent = energySavingPct;
+  document.getElementById('tcoYearsLabel').textContent = `(${years}년 기준)`;
+
+  // 난이도 비교
+  renderDiffCompare(sel, specData);
+
+  // TCO 테이블
+  const rows = [
+    { label: '장비 구매비', nav: totalEquipNav, comp: totalEquipComp },
+    { label: '설치 공사비', nav: totalInstallNav, comp: totalInstallComp },
+    { label: `에너지비용 (${years}년)`, nav: totalEnergyNav, comp: totalEnergyComp },
+    { label: `소모품 비용 (${years}년)`, nav: totalPartsNav, comp: totalPartsComp },
+    { label: `관리 인건비 (${years}년)`, nav: totalMgmtNav, comp: totalMgmtComp },
+  ];
+  let html = '';
+  rows.forEach(r => {
+    const saving = r.comp - r.nav;
+    const pct = r.comp > 0 ? (saving / r.comp * 100).toFixed(1) : 0;
+    html += `<tr>
+      <td>${r.label}</td>
+      <td class="navien-col">${fmtWon(r.nav)}</td>
+      <td class="comp-col">${fmtWon(r.comp)}</td>
+      <td class="saving-col">▼ ${fmtWon(saving)}</td>
+      <td class="saving-col">${pct}%</td>
+    </tr>`;
+  });
+  const totalPct = tcoComp > 0 ? ((tcoComp - tcoNav) / tcoComp * 100).toFixed(1) : 0;
+  html += `<tr class="total-row">
+    <td>TCO 합계</td>
+    <td class="navien-col">${fmtWon(tcoNav)}</td>
+    <td class="comp-col">${fmtWon(tcoComp)}</td>
+    <td class="saving-col">▼ ${fmtWon(totalSaving)}</td>
+    <td class="saving-col">${totalPct}%</td>
+  </tr>`;
+  document.getElementById('tcoTableBody').innerHTML = html;
+
+  renderBarChart(rows);
+  renderPieChart(rows);
+  renderSolutionDetail(sel, specData, units, years);
+  renderEfficiency(totalLaborNav, totalLaborComp, totalHoursNav, totalHoursComp);
+
+  $results.classList.add('visible');
+  $results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ─── 난이도 비교 ─── */
+function renderDiffCompare(sel, specData) {
+  const grid = document.getElementById('diffCompareGrid');
+  let html = '';
+  sel.forEach(key => {
+    const sp = specData[key];
+    html += `
+    <div class="diff-compare-card">
+      <div class="sol-name">${sp.icon} ${sp.name}</div>
+      <div class="diff-compare-row">
+        <span class="side-label nav">나비엔</span>
+        <span class="diff-badge ${DIFF_CLASS[sp.navienDiff]}">${DIFF_SHORT[sp.navienDiff]}</span>
+      </div>
+      <div class="diff-compare-row">
+        <span class="side-label cmp">경쟁사</span>
+        <span class="diff-badge ${DIFF_CLASS[sp.compDiff]}">${DIFF_SHORT[sp.compDiff]}</span>
+      </div>
+    </div>`;
+  });
+  grid.innerHTML = html;
+}
+
+/* ─── 차트 ─── */
+function renderBarChart(rows) {
+  const ctx = document.getElementById('barChart').getContext('2d');
+  if (barChartInstance) barChartInstance.destroy();
+  barChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: rows.map(r => r.label),
+      datasets: [
+        { label: '나비엔', data: rows.map(r => Math.round(r.nav)), backgroundColor: '#0066CC', borderRadius: 4, barPercentage: 0.7 },
+        { label: '경쟁사', data: rows.map(r => Math.round(r.comp)), backgroundColor: '#C0C0C0', borderRadius: 4, barPercentage: 0.7 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { font: { family: 'Pretendard', weight: '600', size: 12 }, usePointStyle: true, pointStyle: 'rectRounded' } },
+        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${formatNumber(ctx.raw)}만원` } }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => fmtAxisMan(v), font: { family: 'Pretendard', size: 11 } }, grid: { color: '#f0f0f0' } },
+        x: { ticks: { font: { family: 'Pretendard', size: 10 }, maxRotation: 45 }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+function renderPieChart(rows) {
+  const ctx = document.getElementById('pieChart').getContext('2d');
+  if (pieChartInstance) pieChartInstance.destroy();
+  const savings = rows.map(r => Math.max(0, r.comp - r.nav));
+  const colors = ['#0066CC', '#00A5E5', '#00B67A', '#FF6B00', '#7C3AED'];
+  pieChartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: rows.map(r => r.label),
+      datasets: [{ data: savings, backgroundColor: colors.slice(0, rows.length), borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '55%',
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Pretendard', size: 11 }, padding: 12, usePointStyle: true, pointStyle: 'circle' } },
+        tooltip: { callbacks: { label: ctx => `${ctx.label}: ${formatNumber(Math.round(ctx.raw))}만원 절감` } }
+      }
+    }
+  });
+}
+
+/* ─── 솔루션별 상세 ─── */
+function renderSolutionDetail(sel, specData, units, years) {
+  const grid = document.getElementById('solutionDetailGrid');
+  let html = '';
+  sel.forEach(key => {
+    const sp = specData[key];
+    const equipSaving = (sp.compPrice - sp.navienPrice) * units;
+    const energySaving = (sp.compEnergyCost - sp.navienEnergyCost) * 12 * units;
+    const navPC = sp.navienPartsCycle > 0 ? Math.floor((years*12)/sp.navienPartsCycle) : 0;
+    const compPC = sp.compPartsCycle > 0 ? Math.floor((years*12)/sp.compPartsCycle) : 0;
+    const partsSaving = (compPC * sp.compPartsCost - navPC * sp.navienPartsCost) * units;
+    const mgmtSaving = (sp.compMgmtCost - sp.navienMgmtCost) * 12 * units;
+
+    html += `
+    <div class="solution-detail-card">
+      <h4>${sp.icon} ${sp.name}</h4>
+      <div class="detail-row"><span class="label">세대당 구매가</span><span class="value navien">${formatNumber(sp.navienPrice)}만 (경쟁사 ${formatNumber(sp.compPrice)}만)</span></div>
+      <div class="detail-row"><span class="label">에너지 효율지수</span><span class="value navien">${sp.navienEfficiency}% (경쟁사 ${sp.compEfficiency}%)</span></div>
+      <div class="detail-row"><span class="label">소모품 교체주기</span><span class="value navien">${sp.navienPartsCycle}개월 (경쟁사 ${sp.compPartsCycle}개월)</span></div>
+      <div class="detail-row" style="margin-top:8px; padding-top:8px; border-top:2px solid var(--border);">
+        <span class="label">장비비 절감 (${units}세대)</span>
+        <span class="value saving">▼ ${fmtWon(equipSaving)}</span>
+      </div>
+      <div class="detail-row"><span class="label">연간 에너지비 절감</span><span class="value saving">▼ ${fmtWon(energySaving)}/년</span></div>
+      <div class="detail-row"><span class="label">소모품 비용 절감 (${years}년)</span><span class="value saving">▼ ${fmtWon(partsSaving)}</span></div>
+      <div class="detail-row"><span class="label">관리 인건비 절감 (연간)</span><span class="value saving">▼ ${fmtWon(mgmtSaving)}/년</span></div>
+      <div class="detail-row"><span class="label">설치 인력</span><span class="value navien">${Math.round(sp.navienInstallLabor * units)}명 (경쟁사 ${Math.round(sp.compInstallLabor * units)}명)</span></div>
+    </div>`;
+  });
+  grid.innerHTML = html;
+}
+
+/* ─── 공사 효율성 ─── */
+function renderEfficiency(totalLaborNav, totalLaborComp, totalHoursNav, totalHoursComp) {
+  const el = document.getElementById('efficiencyBars');
+  const navDays = Math.ceil(totalHoursNav / 8);
+  const compDays = Math.ceil(totalHoursComp / 8);
+  const laborMax = Math.max(totalLaborNav, totalLaborComp);
+  const daysMax = Math.max(navDays, compDays);
+  el.innerHTML = `
+    <div class="efficiency-item">
+      <label>필요 설치 인력 (연인원)</label>
+      <div class="bar-compare">
+        <div class="bar-row"><span class="bar-label navien">나비엔</span><div class="bar-track"><div class="bar-fill navien-bar" style="width:${(totalLaborNav/laborMax*100).toFixed(1)}%">${formatNumber(Math.round(totalLaborNav))}명</div></div></div>
+        <div class="bar-row"><span class="bar-label comp">경쟁사</span><div class="bar-track"><div class="bar-fill comp-bar" style="width:${(totalLaborComp/laborMax*100).toFixed(1)}%">${formatNumber(Math.round(totalLaborComp))}명</div></div></div>
+      </div>
+    </div>
+    <div class="efficiency-item">
+      <label>예상 공사 기간 (일)</label>
+      <div class="bar-compare">
+        <div class="bar-row"><span class="bar-label navien">나비엔</span><div class="bar-track"><div class="bar-fill navien-bar" style="width:${(navDays/daysMax*100).toFixed(1)}%">${formatNumber(navDays)}일</div></div></div>
+        <div class="bar-row"><span class="bar-label comp">경쟁사</span><div class="bar-track"><div class="bar-fill comp-bar" style="width:${(compDays/daysMax*100).toFixed(1)}%">${formatNumber(compDays)}일</div></div></div>
+      </div>
+    </div>`;
+}
+
+/* ─── 포맷 유틸 ─── */
+function formatNumber(n) { return Number(n).toLocaleString('ko-KR'); }
+function fmtWon(manwon) {
+  if (manwon >= 10000) return formatNumber(Math.round(manwon / 10000 * 10) / 10) + '억원';
+  return formatNumber(Math.round(manwon)) + '만원';
+}
+function fmtMan(manwon) {
+  if (manwon >= 10000) return (manwon / 10000).toFixed(1) + '억';
+  return formatNumber(Math.round(manwon));
+}
+function fmtAxisMan(v) {
+  if (v >= 10000) return (v/10000).toFixed(0) + '억';
+  if (v >= 1000) return (v/1000).toFixed(0) + '천만';
+  return formatNumber(v) + '만';
+}
+
+/* ─── Init ─── */
+buildSpecPanels();
+</script>
+</body>
+</html>
