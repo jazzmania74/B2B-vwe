@@ -217,6 +217,8 @@
   .tag-gpu { background: #EC4899; }
   .tag-comp { background: var(--comp-red); }
   .tag-ours { background: var(--his-primary); }
+  .tag-down { background: #DC2626; }
+  .tag-drive { background: #059669; }
 
   /* ── 섹션 제목 ── */
   .tco-section-title {
@@ -949,7 +951,8 @@
       <b>+</b> <span class="tag tag-sw">SW 라이선스</span> TB당 라이선스비 x 유효용량<br>
       <b>+</b> <span class="tag tag-maint">유지보수</span> 장비 총액 x 유지보수율<br>
       <b>+</b> <span class="tag tag-labor">인건비</span> 장비당 인원 x 총 장비 수 x 연봉<br>
-      <b>+</b> <span class="tag tag-gpu">GPU 유휴비용</span> GPU 수 x 시간당비용 x 연간시간 x 병목률<br><br>
+      <b>+</b> <span class="tag tag-gpu">GPU 유휴비용</span> GPU 수 x 시간당비용 x 연간시간 x 병목률<br>
+      <b>+</b> <span class="tag tag-down">다운타임</span> 장애건수 x TTR x 시간당비용 x 장비수 x 사이트수<br><br>
       <span class="tag tag-comp">경쟁사</span> TCO <b>-</b> <span class="tag tag-ours">HIS</span> TCO <b>= 총 TCO 절감액</b>
     </div>
   </div>
@@ -1110,12 +1113,55 @@
         </div>
       </div>
     </div>
+
+    <!-- 드라이브 구성 -->
+    <div class="tco-sub-group">
+      <div class="sub-title"><span class="tag tag-drive">드라이브</span> 드라이브 구성 (스토리지 밀도)</div>
+      <div class="tco-fields">
+        <div class="tco-field">
+          <label>드라이브 베이 수 (대당)</label>
+          <input type="text" id="comp-drive-bays" inputmode="numeric" placeholder="예: 48">
+          <span class="unit">장/대</span>
+          <div class="field-hint">대당 최대 장착 가능 드라이브 수</div>
+        </div>
+        <div class="tco-field">
+          <label>드라이브 당 용량</label>
+          <input type="text" id="comp-drive-cap" inputmode="decimal" placeholder="예: 15.36">
+          <span class="unit">TB/장</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 장애/다운타임 -->
+    <div class="tco-sub-group">
+      <div class="sub-title"><span class="tag tag-down">다운타임</span> 장애 복구 및 다운타임 비용 (TTR)</div>
+      <div class="tco-fields">
+        <div class="tco-field">
+          <label>연간 장애 건수 (대당)</label>
+          <input type="text" id="comp-fail-cnt" inputmode="decimal" placeholder="예: 2" value="2">
+          <span class="unit">건/대/년</span>
+          <div class="field-hint">디스크 교체, 컨트롤러 장애 등</div>
+        </div>
+        <div class="tco-field">
+          <label>평균 복구시간 TTR</label>
+          <input type="text" id="comp-ttr" inputmode="decimal" placeholder="예: 4" value="4">
+          <span class="unit">시간/건</span>
+          <div class="field-hint">Time To Repair — 장애 감지~복구 완료</div>
+        </div>
+        <div class="tco-field field-full">
+          <label>시간당 다운타임 비용</label>
+          <input type="text" id="comp-down-cost" inputmode="numeric" placeholder="예: 1,000,000" value="1,000,000">
+          <span class="unit">원/시간</span>
+          <div class="field-hint">업무 중단으로 인한 시간당 손실 비용</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ── 동일 적용 체크 ── -->
   <label class="tco-same-check">
     <input type="checkbox" id="same-check" checked>
-    <span>장비 대수 · 사이트 수 · 운영시간 · 전기요금 · PUE · 랙비 · 인건비 · GPU 기본 조건을 동일하게 적용</span>
+    <span>장비 대수 · 사이트 수 · 운영시간 · 전기요금 · PUE · 랙비 · 인건비 · GPU · 다운타임 비용을 동일하게 적용</span>
   </label>
 
   <!-- ── HIS 당사 입력 ── -->
@@ -1247,6 +1293,48 @@
         </div>
       </div>
     </div>
+
+    <!-- 드라이브 구성 -->
+    <div class="tco-sub-group">
+      <div class="sub-title"><span class="tag tag-drive">드라이브</span> 드라이브 구성 (스토리지 밀도)</div>
+      <div class="tco-fields">
+        <div class="tco-field">
+          <label>드라이브 베이 수 (대당)</label>
+          <input type="text" id="ours-drive-bays" inputmode="numeric" placeholder="예: 60">
+          <span class="unit">장/대</span>
+          <div class="field-hint">고밀도 설계로 더 많은 드라이브 장착</div>
+        </div>
+        <div class="tco-field">
+          <label>드라이브 당 용량</label>
+          <input type="text" id="ours-drive-cap" inputmode="decimal" placeholder="예: 30.72">
+          <span class="unit">TB/장</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 장애/다운타임 -->
+    <div class="tco-sub-group">
+      <div class="sub-title"><span class="tag tag-down">다운타임</span> 장애 복구 및 다운타임 비용 (TTR)</div>
+      <div class="tco-fields">
+        <div class="tco-field">
+          <label>연간 장애 건수 (대당)</label>
+          <input type="text" id="ours-fail-cnt" inputmode="decimal" placeholder="예: 1" value="1">
+          <span class="unit">건/대/년</span>
+          <div class="field-hint">핫스왑 지원으로 장애 영향 최소화</div>
+        </div>
+        <div class="tco-field">
+          <label>평균 복구시간 TTR</label>
+          <input type="text" id="ours-ttr" inputmode="decimal" placeholder="예: 0.5" value="0.5">
+          <span class="unit">시간/건</span>
+          <div class="field-hint">핫스왑 교체 — 무중단 복구 가능</div>
+        </div>
+        <div class="tco-field field-full" id="field-ours-down-cost">
+          <label>시간당 다운타임 비용</label>
+          <input type="text" id="ours-down-cost" inputmode="numeric" placeholder="동일 적용">
+          <span class="unit">원/시간</span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ── 시뮬레이션 기간 ── -->
@@ -1299,6 +1387,13 @@
       <div class="tco-result-sub" id="r-gpu-sub"></div>
     </div>
 
+    <!-- 다운타임 비용 절감 -->
+    <div class="tco-result-card" id="r-down-card" style="display:none; background:linear-gradient(135deg, #991B1B 0%, #DC2626 100%);">
+      <div class="tco-result-label">연간 다운타임 비용 절감 (TTR 개선)</div>
+      <div class="tco-result-value" id="r-down-save"></div>
+      <div class="tco-result-sub" id="r-down-sub"></div>
+    </div>
+
     <!-- 비용 항목별 비교 표 -->
     <div class="tco-cost-breakdown">
       <div class="cb-title" id="r-cb-title">항목별 연간 비용 비교</div>
@@ -1316,6 +1411,7 @@
       <div class="cb-row" id="cb-maint"></div>
       <div class="cb-row" id="cb-labor"></div>
       <div class="cb-row" id="cb-gpu"></div>
+      <div class="cb-row" id="cb-down"></div>
       <div class="cb-row cb-total" id="cb-total"></div>
     </div>
 
@@ -1345,12 +1441,24 @@
         <div class="dt-label">유효용량 대비 비용/TB</div>
         <div class="dt-value" id="r-cost-per-tb"></div>
       </div>
+      <div class="tco-detail-item dt-highlight">
+        <div class="dt-label">TTR 개선</div>
+        <div class="dt-value" id="r-ttr-diff"></div>
+      </div>
+      <div class="tco-detail-item">
+        <div class="dt-label">드라이브 밀도 비교</div>
+        <div class="dt-value" id="r-drive-density"></div>
+      </div>
+      <div class="tco-detail-item">
+        <div class="dt-label">다운타임 절감률</div>
+        <div class="dt-value" id="r-down-pct"></div>
+      </div>
     </div>
 
     <!-- 연간 TCO 비교 그래프 -->
     <div class="tco-chart">
       <div class="tco-chart-title" id="r-annual-chart-title">연간 총 운영비 비교</div>
-      <div class="tco-chart-sub">전력 + 냉각 + 랙 + SW + 유지보수 + 인건비 + GPU 유휴비용</div>
+      <div class="tco-chart-sub">전력 + 냉각 + 랙 + SW + 유지보수 + 인건비 + GPU 유휴비용 + 다운타임</div>
       <div class="tco-bar-group">
         <div class="tco-bar-label">
           <span id="bar-comp-name">경쟁사</span>
@@ -1384,6 +1492,7 @@
           <div class="stack-legend-item"><div class="legend-dot" style="background:#8B5CF6;"></div>유지보수</div>
           <div class="stack-legend-item"><div class="legend-dot" style="background:#2E8B57;"></div>인건비</div>
           <div class="stack-legend-item"><div class="legend-dot" style="background:#EC4899;"></div>GPU유휴</div>
+          <div class="stack-legend-item"><div class="legend-dot" style="background:#DC2626;"></div>다운타임</div>
         </div>
         <div class="stack-bar-wrap">
           <div class="stack-bar-label" id="stack-comp-label">경쟁사</div>
@@ -1426,7 +1535,7 @@
     <!-- 연도별 시뮬레이션 표 -->
     <div class="tco-chart">
       <div class="tco-chart-title" id="r-table-title">연도별 누적 TCO 시뮬레이션</div>
-      <div class="tco-chart-sub">장비 구매비 + 전력 + 냉각 + 랙 + SW + 유지보수 + 인건비 + GPU유휴 누적</div>
+      <div class="tco-chart-sub">장비 구매비 + 전력 + 냉각 + 랙 + SW + 유지보수 + 인건비 + GPU유휴 + 다운타임 누적</div>
       <div class="tco-sim-table-wrap">
         <table class="tco-sim-table" id="r-sim-table">
           <thead>
@@ -1496,12 +1605,14 @@
   var sameFields = [
     'field-ours-qty','field-ours-sites','field-ours-hrs','field-ours-rate','field-ours-pue',
     'field-ours-rack-cost','field-ours-salary',
-    'field-ours-gpu-cnt','field-ours-gpu-cost','field-ours-gpu-hrs'
+    'field-ours-gpu-cnt','field-ours-gpu-cost','field-ours-gpu-hrs',
+    'field-ours-down-cost'
   ];
   var sameInputs = [
     'ours-qty','ours-sites','ours-hrs','ours-rate','ours-pue',
     'ours-rack-cost','ours-salary',
-    'ours-gpu-cnt','ours-gpu-cost','ours-gpu-hrs'
+    'ours-gpu-cnt','ours-gpu-cost','ours-gpu-hrs',
+    'ours-down-cost'
   ];
 
   function toggleSame(){
@@ -1580,6 +1691,11 @@ function tcoCalc(){
   var cGpuCost = pn('comp-gpu-cost');
   var cGpuHrs = pn('comp-gpu-hrs');
   var cBottleneck = pn('comp-bottleneck');
+  var cFailCnt = pn('comp-fail-cnt');
+  var cTTR = pn('comp-ttr');
+  var cDownCost = pn('comp-down-cost');
+  var cDriveBays = pn('comp-drive-bays');
+  var cDriveCap = pn('comp-drive-cap');
 
   /* HIS 값 */
   var oPrice = pn('ours-price');
@@ -1601,6 +1717,11 @@ function tcoCalc(){
   var oGpuCost = same ? cGpuCost : pn('ours-gpu-cost');
   var oGpuHrs = same ? cGpuHrs : pn('ours-gpu-hrs');
   var oBottleneck = pn('ours-bottleneck');
+  var oFailCnt = pn('ours-fail-cnt');
+  var oTTR = pn('ours-ttr');
+  var oDownCost = same ? cDownCost : pn('ours-down-cost');
+  var oDriveBays = pn('ours-drive-bays');
+  var oDriveCap = pn('ours-drive-cap');
 
   var simYears = Math.max(1, Math.min(30, Math.round(pn('sim-years')))) || 5;
 
@@ -1647,9 +1768,13 @@ function tcoCalc(){
   var cGpuIdle = cGpuCnt * cGpuCost * cGpuHrs * (cBottleneck / 100);
   var oGpuIdle = oGpuCnt * oGpuCost * oGpuHrs * (oBottleneck / 100);
 
+  /* 9. 연간 다운타임 비용 (장애건수 x TTR x 시간당비용 x 장비수 x 사이트수) */
+  var cDowntime = cFailCnt * cTTR * cDownCost * cQty * cSites;
+  var oDowntime = oFailCnt * oTTR * oDownCost * oQty * oSites;
+
   /* 연간 총 운영비 (장비비 제외) */
-  var cAnnualOpex = cPower + cCool + cRack + cSW + cMaint + cLabor + cGpuIdle;
-  var oAnnualOpex = oPower + oCool + oRack + oSW + oMaint + oLabor + oGpuIdle;
+  var cAnnualOpex = cPower + cCool + cRack + cSW + cMaint + cLabor + cGpuIdle + cDowntime;
+  var oAnnualOpex = oPower + oCool + oRack + oSW + oMaint + oLabor + oGpuIdle + oDowntime;
   var annualSaving = cAnnualOpex - oAnnualOpex;
 
   /* N년 TCO */
@@ -1713,6 +1838,7 @@ function tcoCalc(){
   fillCBRow('cb-maint', '유지보수 (연간)', cMaint, oMaint);
   fillCBRow('cb-labor', '인건비 (연간)', cLabor, oLabor);
   fillCBRow('cb-gpu', 'GPU 유휴비용 (연간)', cGpuIdle, oGpuIdle);
+  fillCBRow('cb-down', '다운타임 비용 (연간)', cDowntime, oDowntime);
 
   var totalEl = document.getElementById('cb-total');
   var annDiffClass = annualSaving >= 0 ? 'positive' : 'negative';
@@ -1742,6 +1868,35 @@ function tcoCalc(){
     roiBox.className = 'tco-detail-item dt-highlight';
     document.getElementById('r-roi-label').textContent = '투자 회수';
   }
+
+  /* 다운타임 카드 */
+  var downSave = cDowntime - oDowntime;
+  var downCard = document.getElementById('r-down-card');
+  if(cFailCnt > 0 && downSave !== 0){
+    downCard.style.display = 'block';
+    document.getElementById('r-down-save').textContent = downSave > 0 ? formatKRW(downSave) : formatKRW(Math.abs(downSave)) + ' 추가';
+    document.getElementById('r-down-sub').textContent =
+      'TTR '+cTTR+'시간 → '+oTTR+'시간, 장애 '+cFailCnt+'건 → '+oFailCnt+'건 (핫스왑 복구)';
+  } else {
+    downCard.style.display = 'none';
+  }
+
+  /* TTR 상세 */
+  var ttrImprove = cTTR > 0 ? (((cTTR - oTTR) / cTTR) * 100).toFixed(0) : '0';
+  document.getElementById('r-ttr-diff').textContent = cTTR + 'h → ' + oTTR + 'h (' + ttrImprove + '%↓)';
+
+  /* 드라이브 밀도 */
+  var cMaxTB = cDriveBays * cDriveCap;
+  var oMaxTB = oDriveBays * oDriveCap;
+  if(cDriveBays > 0 && oDriveBays > 0){
+    document.getElementById('r-drive-density').textContent = fn(Math.round(cMaxTB)) + ' vs ' + fn(Math.round(oMaxTB)) + 'TB';
+  } else {
+    document.getElementById('r-drive-density').textContent = '-';
+  }
+
+  /* 다운타임 절감률 */
+  var downPct = cDowntime > 0 ? (((cDowntime - oDowntime) / cDowntime) * 100).toFixed(1) : '0';
+  document.getElementById('r-down-pct').textContent = downPct + '%';
 
   /* 유효용량 대비 비용/TB */
   var cCostPerTB = cEffTB > 0 ? cTCO / cEffTB : 0;
@@ -1779,10 +1934,10 @@ function tcoCalc(){
       barTcoOurs.style.width = ((oTCO/tcoMax)*100).toFixed(1)+'%';
 
       /* 스택 바 */
-      var compCosts = [cPower, cCool, cRack, cSW, cMaint, cLabor, cGpuIdle];
-      var oursCosts = [oPower, oCool, oRack, oSW, oMaint, oLabor, oGpuIdle];
-      var colors = ['#E05555','#FF8C00','#64748B','#6366F1','#8B5CF6','#2E8B57','#EC4899'];
-      var labels = ['전력','냉각','랙','SW','유지','인건비','GPU'];
+      var compCosts = [cPower, cCool, cRack, cSW, cMaint, cLabor, cGpuIdle, cDowntime];
+      var oursCosts = [oPower, oCool, oRack, oSW, oMaint, oLabor, oGpuIdle, oDowntime];
+      var colors = ['#E05555','#FF8C00','#64748B','#6366F1','#8B5CF6','#2E8B57','#EC4899','#DC2626'];
+      var labels = ['전력','냉각','랙','SW','유지','인건비','GPU','다운'];
 
       function buildStack(containerId, costs){
         var total = costs.reduce(function(a,b){return a+b;},0) || 1;
@@ -1872,6 +2027,10 @@ function tcoCalc(){
     parts.push('스토리지 병목률 개선('+cBottleneck+'% → '+oBottleneck+'%)으로 <strong class="s-pink">GPU 유휴비용 연간 '+formatKRW(gpuSave)+'</strong> 절감, AI 학습 효율이 향상됩니다.');
   }
 
+  if(cFailCnt > 0 && downSave > 0){
+    parts.push('핫스왑 교체 지원으로 TTR <strong>'+cTTR+'시간 → '+oTTR+'시간</strong>으로 단축, <strong style="color:#DC2626;">다운타임 비용 연간 '+formatKRW(downSave)+'</strong> 절감됩니다.');
+  }
+
   parts.push('총 연간 운영비 <strong>'+formatKRW(annualSaving)+'</strong> 절감, <strong class="s-purple">'+simYears+'년간 TCO '+formatKRW(tcoSaving > 0 ? tcoSaving : 0)+'</strong> 절감 효과가 발생합니다.');
 
   if(equipDiff > 0){
@@ -1900,9 +2059,9 @@ function tcoCalc(){
   window._tcoData = {
     vendor: vendorName,
     simYears: simYears,
-    comp: { equip: cEquip, power: cPower, cool: cCool, rack: cRack, sw: cSW, maint: cMaint, labor: cLabor, gpuIdle: cGpuIdle, totalOpex: cAnnualOpex, tco: cTCO, qty: cQty, sites: cSites, kwTotal: cTotalKW, staff: cTotalStaff, effTB: cEffTB, bottleneck: cBottleneck },
-    ours: { equip: oEquip, power: oPower, cool: oCool, rack: oRack, sw: oSW, maint: oMaint, labor: oLabor, gpuIdle: oGpuIdle, totalOpex: oAnnualOpex, tco: oTCO, qty: oQty, sites: oSites, kwTotal: oTotalKW, staff: oTotalStaff, effTB: oEffTB, bottleneck: oBottleneck },
-    savings: { annual: annualSaving, tco: tcoSaving, equipDiff: equipDiff, roi: roiText, gpu: gpuSave }
+    comp: { equip: cEquip, power: cPower, cool: cCool, rack: cRack, sw: cSW, maint: cMaint, labor: cLabor, gpuIdle: cGpuIdle, downtime: cDowntime, totalOpex: cAnnualOpex, tco: cTCO, qty: cQty, sites: cSites, kwTotal: cTotalKW, staff: cTotalStaff, effTB: cEffTB, bottleneck: cBottleneck, ttr: cTTR, failCnt: cFailCnt, driveBays: cDriveBays, driveCap: cDriveCap },
+    ours: { equip: oEquip, power: oPower, cool: oCool, rack: oRack, sw: oSW, maint: oMaint, labor: oLabor, gpuIdle: oGpuIdle, downtime: oDowntime, totalOpex: oAnnualOpex, tco: oTCO, qty: oQty, sites: oSites, kwTotal: oTotalKW, staff: oTotalStaff, effTB: oEffTB, bottleneck: oBottleneck, ttr: oTTR, failCnt: oFailCnt, driveBays: oDriveBays, driveCap: oDriveCap },
+    savings: { annual: annualSaving, tco: tcoSaving, equipDiff: equipDiff, roi: roiText, gpu: gpuSave, downtime: downSave }
   };
 }
 
@@ -1932,6 +2091,8 @@ async function runAI(){
     '- 장비 가격 차이: '+(d.savings.equipDiff > 0 ? 'HIS가 '+formatKRW(d.savings.equipDiff)+' 비싼' : 'HIS가 '+formatKRW(Math.abs(d.savings.equipDiff))+' 저렴')+'\n'+
     '- 투자 회수 기간: '+d.savings.roi+'\n'+
     '- GPU 유휴비용 절감: '+formatKRW(d.savings.gpu)+'/년\n'+
+    '- 다운타임 비용 절감: '+formatKRW(d.savings.downtime)+'/년\n'+
+    '- TTR 개선: '+d.comp.ttr+'시간 → '+d.ours.ttr+'시간 (핫스왑 복구)\n'+
     '- 전력 절감: '+fn(d.comp.kwTotal - d.ours.kwTotal)+' KW\n'+
     '- 인력 절감: '+(d.comp.staff - d.ours.staff).toFixed(1)+'명\n\n'+
     '## 항목별 연간 비용\n'+
@@ -1943,7 +2104,8 @@ async function runAI(){
     '| SW 라이선스 | '+formatKRW(d.comp.sw)+' | '+formatKRW(d.ours.sw)+' |\n'+
     '| 유지보수 | '+formatKRW(d.comp.maint)+' | '+formatKRW(d.ours.maint)+' |\n'+
     '| 인건비 | '+formatKRW(d.comp.labor)+' | '+formatKRW(d.ours.labor)+' |\n'+
-    '| GPU 유휴비용 | '+formatKRW(d.comp.gpuIdle)+' | '+formatKRW(d.ours.gpuIdle)+' |\n\n'+
+    '| GPU 유휴비용 | '+formatKRW(d.comp.gpuIdle)+' | '+formatKRW(d.ours.gpuIdle)+' |\n'+
+    '| 다운타임 비용 | '+formatKRW(d.comp.downtime)+' | '+formatKRW(d.ours.downtime)+' |\n\n'+
     '위 데이터를 바탕으로 다음 항목에 대해 한국어로 전략적 인사이트를 제공해 주세요:\n\n'+
     '1. **핵심 셀링 포인트**: 고객에게 가장 먼저 강조해야 할 3가지 핵심 메시지\n'+
     '2. **경쟁사 반박 대응**: '+d.vendor+'가 내세울 수 있는 장점과 그에 대한 대응 전략\n'+
@@ -2001,6 +2163,11 @@ function tcoReset(){
     if(i.id === 'comp-gpu-hrs' || i.id === 'ours-gpu-hrs'){ i.value = '6,000'; return; }
     if(i.id === 'comp-bottleneck'){ i.value = '15'; return; }
     if(i.id === 'ours-bottleneck'){ i.value = '5'; return; }
+    if(i.id === 'comp-fail-cnt'){ i.value = '2'; return; }
+    if(i.id === 'ours-fail-cnt'){ i.value = '1'; return; }
+    if(i.id === 'comp-ttr'){ i.value = '4'; return; }
+    if(i.id === 'ours-ttr'){ i.value = '0.5'; return; }
+    if(i.id === 'comp-down-cost' || i.id === 'ours-down-cost'){ i.value = '1,000,000'; return; }
     i.value = '';
   });
   document.getElementById('same-check').checked = true;
@@ -2008,6 +2175,7 @@ function tcoReset(){
   document.getElementById('tco-result').style.display = 'none';
   document.getElementById('ai-result').style.display = 'none';
   document.getElementById('ai-btn').style.display = 'none';
+  document.getElementById('r-down-card').style.display = 'none';
   document.querySelector('.tco-header').scrollIntoView({behavior:'smooth'});
 }
 </script>
