@@ -463,6 +463,45 @@
   .tco-ai-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,58,237,0.4); }
   .tco-ai-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
+  /* AI 프로그레스 바 */
+  .ai-progress-wrap {
+    display: none;
+    margin-top: 12px;
+    background: var(--bg-white);
+    border: 1px solid #DDD6FE;
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    text-align: center;
+  }
+  .ai-progress-track {
+    width: 100%;
+    height: 12px;
+    background: #E8E0F8;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .ai-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #7C3AED, #4F46E5);
+    border-radius: 6px;
+    transition: width 0.4s ease, background 0.3s ease;
+  }
+  .ai-progress-fill.done {
+    background: linear-gradient(90deg, #059669, #10B981);
+  }
+  .ai-progress-fill.error {
+    background: linear-gradient(90deg, #DC2626, #EF4444);
+  }
+  .ai-progress-msg {
+    font-size: 13px;
+    font-weight: 600;
+    color: #7C3AED;
+  }
+  .ai-progress-msg.done { color: #059669; }
+  .ai-progress-msg.error { color: #DC2626; }
+
   /* AI 분석 결과 */
   .tco-ai-result {
     display: none;
@@ -1557,10 +1596,16 @@
       <p id="r-summary"></p>
     </div>
 
-    <!-- AI 분석 버튼 & 결과 -->
-    <button class="tco-ai-btn" id="ai-btn" onclick="runAI()">AI 전략 인사이트 생성</button>
+    <!-- AI 분석 버튼 & 프로그레스 & 결과 -->
+    <button class="tco-ai-btn" id="ai-btn" onclick="runAI()">🤖 AI 전략 인사이트 생성</button>
+    <div class="ai-progress-wrap" id="ai-progress">
+      <div class="ai-progress-track">
+        <div class="ai-progress-fill" id="ai-progress-fill"></div>
+      </div>
+      <div class="ai-progress-msg" id="ai-progress-msg">준비 중...</div>
+    </div>
     <div class="tco-ai-result" id="ai-result">
-      <div class="ai-title">AI 전략 인사이트</div>
+      <div class="ai-title">🤖 AI 전략 인사이트</div>
       <div class="ai-body" id="ai-body"></div>
     </div>
 
@@ -2065,6 +2110,64 @@ function tcoCalc(){
   };
 }
 
+/* ── AI 프로그레스 바 헬퍼 ── */
+var _aiProgressTimer = null;
+function aiProgressStart(){
+  var wrap = document.getElementById('ai-progress');
+  var fill = document.getElementById('ai-progress-fill');
+  var msg = document.getElementById('ai-progress-msg');
+  fill.style.width = '0%';
+  fill.className = 'ai-progress-fill';
+  msg.className = 'ai-progress-msg';
+  wrap.style.display = 'block';
+
+  var steps = [
+    {pct: 8, text: '📡 API 연결 중...'},
+    {pct: 18, text: '📊 TCO 데이터 전송 중...'},
+    {pct: 30, text: '🔍 비용 구조 분석 중...'},
+    {pct: 42, text: '⚡ 전력·냉각·다운타임 비교 분석...'},
+    {pct: 55, text: '🏢 경쟁사 대비 강점 도출 중...'},
+    {pct: 65, text: '🎯 고객 유형별 전략 생성 중...'},
+    {pct: 75, text: '💬 엘리베이터 피치 작성 중...'},
+    {pct: 82, text: '✍️ 최종 인사이트 정리 중...'},
+    {pct: 88, text: '⏳ AI 응답 대기 중...'}
+  ];
+  var idx = 0;
+  _aiProgressTimer = setInterval(function(){
+    if(idx < steps.length){
+      fill.style.width = steps[idx].pct + '%';
+      msg.textContent = steps[idx].text;
+      idx++;
+    }
+  }, 1200);
+}
+function aiProgressDone(){
+  clearInterval(_aiProgressTimer);
+  var fill = document.getElementById('ai-progress-fill');
+  var msg = document.getElementById('ai-progress-msg');
+  fill.style.width = '100%';
+  fill.className = 'ai-progress-fill done';
+  msg.className = 'ai-progress-msg done';
+  msg.textContent = '✅ AI 분석 완료!';
+  setTimeout(function(){
+    document.getElementById('ai-progress').style.display = 'none';
+  }, 1500);
+}
+function aiProgressError(errMsg){
+  clearInterval(_aiProgressTimer);
+  var fill = document.getElementById('ai-progress-fill');
+  var msg = document.getElementById('ai-progress-msg');
+  fill.className = 'ai-progress-fill error';
+  msg.className = 'ai-progress-msg error';
+  msg.textContent = '❌ ' + errMsg;
+  setTimeout(function(){
+    document.getElementById('ai-progress').style.display = 'none';
+    document.getElementById('ai-btn').style.display = 'block';
+    document.getElementById('ai-btn').disabled = false;
+    document.getElementById('ai-btn').textContent = '🤖 AI 전략 인사이트 다시 생성';
+  }, 3000);
+}
+
 /* ── AI 분석 ── */
 async function runAI(){
   var apiKey = document.getElementById('api-key').value.trim();
@@ -2075,10 +2178,10 @@ async function runAI(){
   var resultDiv = document.getElementById('ai-result');
   var bodyDiv = document.getElementById('ai-body');
 
-  btn.disabled = true;
-  btn.textContent = 'AI 분석 중...';
-  resultDiv.style.display = 'block';
-  bodyDiv.textContent = '분석 중입니다. 잠시 기다려 주세요...';
+  /* 버튼 숨기고 프로그레스 바 시작 */
+  btn.style.display = 'none';
+  resultDiv.style.display = 'none';
+  aiProgressStart();
 
   var d = window._tcoData;
   var prompt = '당신은 HIS 효성인포메이션시스템의 AI Ready Storage 영업 전략 컨설턴트입니다.\n\n'+
@@ -2137,12 +2240,22 @@ async function runAI(){
 
     var data = await response.json();
     var text = data.content && data.content[0] ? data.content[0].text : '응답을 받지 못했습니다.';
+
+    /* 성공 → 100% 완료 → 결과 표시 */
+    aiProgressDone();
     bodyDiv.textContent = text;
+    setTimeout(function(){
+      resultDiv.style.display = 'block';
+      resultDiv.scrollIntoView({behavior:'smooth', block:'start'});
+      btn.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '🤖 AI 전략 인사이트 다시 생성';
+    }, 1600);
   } catch(err){
-    bodyDiv.textContent = 'AI 분석 오류: ' + err.message + '\n\nAPI 키를 확인하거나, 잠시 후 다시 시도해 주세요.';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'AI 전략 인사이트 다시 생성';
+    /* 실패 → 에러 표시 → 버튼 복원 */
+    aiProgressError(err.message);
+    bodyDiv.textContent = '';
+    resultDiv.style.display = 'none';
   }
 }
 
@@ -2175,6 +2288,8 @@ function tcoReset(){
   document.getElementById('tco-result').style.display = 'none';
   document.getElementById('ai-result').style.display = 'none';
   document.getElementById('ai-btn').style.display = 'none';
+  document.getElementById('ai-progress').style.display = 'none';
+  clearInterval(_aiProgressTimer);
   document.getElementById('r-down-card').style.display = 'none';
   document.querySelector('.tco-header').scrollIntoView({behavior:'smooth'});
 }
